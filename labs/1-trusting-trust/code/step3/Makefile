@@ -6,11 +6,7 @@ all: string-to-char-array clone
 
 clone:
 	../step1/string-to-char-array < attack.c > attack-array.h
-	cat attack-array.h >> replicate.c
-	rm attack-array.h
-	cat trojan-cc2.c >> replicate.c
-	$(CC) replicate.c -o trojan-cc2
-	rm replicate.c
+	$(CC) trojan-cc2.c -o trojan-cc2
 	./trojan-cc2 ../step2/identity-cc.c -o cc-attacked
 	rm temp-out.c
 	./cc-attacked ../step2/identity-cc.c -o cc-attacked2

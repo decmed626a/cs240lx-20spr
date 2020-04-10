@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include "attack-array.h"
 
 #define error(args...) do { fprintf(stderr, ##args); exit(1);  } while(0)
 
