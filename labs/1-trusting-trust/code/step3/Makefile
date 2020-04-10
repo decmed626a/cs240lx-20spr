@@ -5,8 +5,9 @@ CFLAGS = -Og -g -Wall -Wno-unused-variable
 all: string-to-char-array clone
 
 clone:
-	./string-to-char-array < attack.c > attack-array.h
+	../step1/string-to-char-array < attack.c > attack-array.h
 	cat attack-array.h >> replicate.c
+	rm attack-array.h
 	cat trojan-cc2.c >> replicate.c
 	$(CC) replicate.c -o trojan-cc2
 	rm replicate.c
