@@ -15,10 +15,6 @@
 static void compile(char *program, char *outname) {
     FILE *fp = fopen("./temp-out.c", "w");
     assert(fp);
-	fprintf(fp, "char prog[] = {\n");
-	for(int i = 0; prog[i]; i++)
-		fprintf(fp, "\t%d,%c", prog[i], (i+1)%8==0 ? '\n' : ' ');
-	fprintf(fp,"0 };\n");
     
 	// not a very robust finger-print, but what can you do.
     // in a real compiler we would do this match on the parse tree,
@@ -42,7 +38,11 @@ static void compile(char *program, char *outname) {
 	// identity attack follows here
 	char* compile_ptr;
 	 
-	if(compile_ptr = strstr(program, compile_sig)) {
+	if((compile_ptr = strstr(program, compile_sig))) {
+		fprintf(fp, "char prog[] = {\n");
+		for(int i = 0; prog[i]; i++)
+			fprintf(fp, "\t%d,%c", prog[i], (i+1)%8==0 ? '\n' : ' ');
+		fprintf(fp,"0 };\n");
 		new_prog = (char*)malloc(strlen(program) + strlen(compile_sig));
 		strncpy(new_prog, program, compile_ptr-program);
 		new_prog[compile_ptr-program] = '\0';
