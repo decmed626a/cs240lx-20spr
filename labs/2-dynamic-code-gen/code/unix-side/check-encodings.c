@@ -22,6 +22,7 @@ uint32_t *insts_emit(unsigned *nbytes, char *insts) {
 	run_system("arm-none-eabi-as --warn --fatal-warnings -mcpu=arm1176jzf-s -march=armv6zk tempasm.s -o tempasm.o");
 	run_system("arm-none-eabi-objcopy tempasm.o -O binary tempasm.bin");
 	void* code_ptr = read_file(nbytes, "tempasm.bin");
+	close(asm_fd);
 	return (uint32_t*)code_ptr;
 }
 
@@ -130,11 +131,11 @@ void derive_op_rrr(const char *name, const char *opcode,
     // bits that changed: these are the register bits.
     uint32_t changed = ~never_changed;
 
-    output("register dst are bits set in: %x\n", changed);
+    //output("register dst are bits set in: %x\n", changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
     d_off = ffs(changed) - 1;
-	printf("d_off: %d", d_off);
+	//printf("d_off: %d", d_off);
     
 	// check that bits are contig and at most 4 bits are set.
     if(((changed >> d_off) & ~0xf) != 0)
@@ -145,7 +146,7 @@ void derive_op_rrr(const char *name, const char *opcode,
 	// Mask opcode with dummy call to emit_rrr
 	op &= emit_rrr(opcode, dst[0], s1, s2);
 
-    output("opcode is in =%x\n", op);
+    //output("opcode is in =%x\n", op);
 
     assert(d && s1 && s2);
 
@@ -172,11 +173,11 @@ void derive_op_rrr(const char *name, const char *opcode,
     // bits that changed: these are the register bits.
     uint32_t src1_changed = ~src1_never_changed;
 
-    output("register src1 are bits set in: %x\n", src1_changed);
+    //output("register src1 are bits set in: %x\n", src1_changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
     src1_off = ffs(src1_changed) - 1;
-	printf("src1_off: %d", src1_off);
+	//printf("src1_off: %d", src1_off);
     
 	// check that bits are contig and at most 4 bits are set.
     if(((src1_changed >> src1_off) & ~0xf) != 0)
@@ -208,18 +209,18 @@ void derive_op_rrr(const char *name, const char *opcode,
     // bits that changed: these are the register bits.
     uint32_t src2_changed = ~src2_never_changed;
 
-    output("register src2 are bits set in: %x\n", src2_changed);
+    //output("register src2 are bits set in: %x\n", src2_changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
     src2_off = ffs(src2_changed) - 1;
-	printf("src2_off: %d", src2_off);
+	//printf("src2_off: %d", src2_off);
 
     // check that bits are contig and at most 4 bits are set.
     if(((src2_changed >> src2_off) & ~0xf) != 0)
         panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
     // refine the opcode.
     //op &= never_changed;
-    output("opcode is in =%x\n", op);
+    // output("opcode is in =%x\n", op);
 
     // emit: NOTE: obviously, currently <src1_off>, <src2_off> are not 
     // defined (so solve for them) and opcode needs to be refined more.
@@ -299,7 +300,14 @@ int main(void) {
                 0 
     };
     // XXX: should probably pass a bitmask in instead.
+    derive_op_rrr("arm_and", "and", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_eor", "eor", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_sub", "sub", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_rsb", "rsb", all_regs,all_regs,all_regs);
     derive_op_rrr("arm_add", "add", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_adc", "adc", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_sbc", "sbc", all_regs,all_regs,all_regs);
+    derive_op_rrr("arm_rsc", "rsc", all_regs,all_regs,all_regs);
     output("did something: now use the generated code in the checks above!\n");
 
     // get encodings for other instructions, loads, stores, branches, etc.
