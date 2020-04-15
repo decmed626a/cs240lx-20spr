@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "code-gen.h"
 #include "armv6-insts.h"
+#include "arm_gen.h"
 
 /*
  *  1. emits <insts> into a temporary file.
@@ -372,6 +373,24 @@ int main(void) {
     derive_op_2rr("arm_mvn", "mvn", all_regs,all_regs);
     output("did something: now use the generated code in the checks above!\n");
 
-    // get encodings for other instructions, loads, stores, branches, etc.
+	// check generated instructions
+    check_one_inst("and r0, r1, r2", arm_and(arm_r0, arm_r1, arm_r2));
+    check_one_inst("eor r0, r1, r2", arm_eor(arm_r0, arm_r1, arm_r2));
+    check_one_inst("sub r0, r1, r2", arm_sub(arm_r0, arm_r1, arm_r2));
+    check_one_inst("rsb r0, r1, r2", arm_rsb(arm_r0, arm_r1, arm_r2));
+    check_one_inst("rsb r0, r1, r2", arm_rsb(arm_r0, arm_r1, arm_r2));
+    check_one_inst("add r0, r1, r2", derive_arm_add(arm_r0, arm_r1, arm_r2));
+    check_one_inst("adc r0, r1, r2", arm_adc(arm_r0, arm_r1, arm_r2));
+    check_one_inst("sbc r0, r1, r2", arm_sbc(arm_r0, arm_r1, arm_r2));
+    check_one_inst("rsc r0, r1, r2", arm_rsc(arm_r0, arm_r1, arm_r2));
+    check_one_inst("tst r0, r1", arm_tst(arm_r0, arm_r1));
+    check_one_inst("teq r0, r1", arm_teq(arm_r0, arm_r1));
+    check_one_inst("cmp r0, r1", arm_cmp(arm_r0, arm_r1));
+    check_one_inst("cmn r0, r1", arm_cmn(arm_r0, arm_r1));
+    check_one_inst("orr r0, r1", arm_orr(arm_r0, arm_r1));
+    check_one_inst("mov r0, r1", arm_mov(arm_r0, arm_r1));
+    check_one_inst("bic r0, r1", arm_bic(arm_r0, arm_r1));
+    check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
+	// get encodings for other instructions, loads, stores, branches, etc.
     return 0;
 }

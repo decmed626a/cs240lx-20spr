@@ -127,6 +127,7 @@ static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
 	return inst;
 }
 
+
 // <add> of an immediate
 static inline uint32_t arm_add_imm8(uint8_t rd, uint8_t rs1, uint8_t imm) {
     unimplemented();
