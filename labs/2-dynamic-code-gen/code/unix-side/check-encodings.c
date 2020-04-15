@@ -14,8 +14,17 @@
  */
 uint32_t *insts_emit(unsigned *nbytes, char *insts) {
     // check libunix.h --- create_file, write_exact, run_system, read_file.
-    unimplemented();
+	const char asm_filename[10] = "tempasm.s";
+	const char machine_filename[8] = "tempasm";
+	int asm_fd = create_file(asm_filename);
+	write_exact(asm_fd, (void*) insts, strlen(insts));
+	write_exact(asm_fd, "\n", 1);
+	run_system("arm-none-eabi-as --warn --fatal-warnings -mcpu=arm1176jzf-s -march=armv6zk tempasm.s -o tempasm.o");
+	run_system("arm-none-eabi-objcopy tempasm.o -O binary tempasm.bin");
+	void* code_ptr = read_file(nbytes, "tempasm.bin");
+	return (uint32_t*)code_ptr;
 }
+
 
 /*
  * a cross-checking hack that uses the native GNU compiler/assembler to 

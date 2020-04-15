@@ -1,0 +1,39 @@
+In file included from strace.c:10:
+/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libunix/libunix.h:90:9: error: 'roundup' macro redefined [-Werror,-Wmacro-redefined]
+#define roundup(x,n) (((x)+((n)-1))&(~((n)-1)))
+        ^
+/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/include/sys/param.h:209:9: note: previous definition is here
+#define roundup(x, y)   ((((x) % (y)) == 0) ? \
+        ^
+strace.c:24:16: error: use of undeclared identifier 'SYS_exit_group'
+        sysnum(SYS_exit_group);
+               ^
+strace.c:29:16: error: use of undeclared identifier 'SYS_brk'
+        sysnum(SYS_brk);
+               ^
+strace.c:30:16: error: use of undeclared identifier 'SYS_arch_prctl'
+        sysnum(SYS_arch_prctl);
+               ^
+strace.c:44:24: error: use of undeclared identifier 'PTRACE_TRACEME'
+        no_fail(ptrace(PTRACE_TRACEME));
+                       ^
+strace.c:50:20: error: use of undeclared identifier 'PTRACE_SETOPTIONS'
+    no_fail(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_EXITKILL));
+                   ^
+strace.c:50:47: error: use of undeclared identifier 'PTRACE_O_EXITKILL'
+    no_fail(ptrace(PTRACE_SETOPTIONS, pid, 0, PTRACE_O_EXITKILL));
+                                              ^
+strace.c:53:24: error: use of undeclared identifier 'PTRACE_SYSCALL'
+        no_fail(ptrace(PTRACE_SYSCALL, pid, 0, 0));
+                       ^
+strace.c:56:33: error: variable has incomplete type 'struct user_regs_struct'
+        struct user_regs_struct regs;
+                                ^
+strace.c:56:16: note: forward declaration of 'struct user_regs_struct'
+        struct user_regs_struct regs;
+               ^
+strace.c:57:19: error: use of undeclared identifier 'PTRACE_GETREGS'
+        if(ptrace(PTRACE_GETREGS, pid, 0, &regs) < 0) {
+                  ^
+10 errors generated.
+make: *** [strace] Error 1

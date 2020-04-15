@@ -1,5 +1,6 @@
 #include <assert.h>
 #include "libunix.h"
+#include "sys/select.h"
 
 #if 0
 int can_read_timeout(int fd, unsigned usec) {
