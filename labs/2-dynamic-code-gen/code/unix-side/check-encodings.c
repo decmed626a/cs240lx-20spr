@@ -74,7 +74,7 @@ void insts_print(char *insts) {
 
 // helper function for reverse engineering.  you should refactor its interface
 // so your code is better.
-uint32_t emit_rrr(const char *op, const char *d, const char *s1, const char *s2) {
+uint32_t emit_rrr(const char* op, const char *d, const char *s1, const char *s2) {
     char buf[1024];
     sprintf(buf, "%s %s, %s, %s", op, d, s1, s2);
 
@@ -84,37 +84,32 @@ uint32_t emit_rrr(const char *op, const char *d, const char *s1, const char *s2)
     return *c;
 }
 
-// overly-specific.  some assumptions:
-//  1. each register is encoded with its number (r0 = 0, r1 = 1)
-//  2. related: all register fields are contiguous.
-//
-// NOTE: you should probably change this so you can emit all instructions 
-// all at once, read in, and then solve all at once.
-//
-// For lab:
-//  1. complete this code so that it solves for the other registers.
-//  2. refactor so that you can reused the solving code vs cut and pasting it.
-//  3. extend system_* so that it returns an error.
-//  4. emit code to check that the derived encoding is correct.
-//  5. emit if statements to checks for illegal registers (those not in <src1>,
-//    <src2>, <dst>).
-void derive_op_rrr(const char *name, const char *opcode, 
-        const char **dst, const char **src1, const char **src2) {
+unsigned solve(int run_number, unsigned* op, const char* opcode, const char** dst, const char** src1, const char** src2) {
+	
+	unsigned offset = 0;
 
-    const char *s1 = src1[0];
-    const char *s2 = src2[0];
-    const char *d = dst[0];
-    assert(d && s1 && s2);
-
-    unsigned d_off = 0, src1_off = 0, src2_off = 0, op = ~0;
+	const char* temp;
+	if(0 == run_number) {
+		temp = *dst;
+	} else if (1 == run_number) {
+		temp = *src1;
+	} else {
+		temp = *src2;
+	}
 
     uint32_t always_0 = ~0, always_1 = ~0;
 
 	// DESTINATION OFFSET
     // compute any bits that changed as we vary d.
-    for(unsigned i = 0; dst[i]; i++) {
-        uint32_t u = emit_rrr(opcode, dst[i], s1, s2);
-
+    for(unsigned i = 0; temp[i]; i++) {
+		uint32_t u = 0;
+		if(0 == run_number) {
+        	u = emit_rrr(opcode, dst[i], *src1, *src2);
+		} else if (1 == run_number) {
+        	u = emit_rrr(opcode, *dst, src1[i], *src2);
+		} else {
+        	u = emit_rrr(opcode, *dst, *src1, src2[i]);
+		}
         // if a bit is always 0 then it will be 1 in always_0
         always_0 &= ~u;
 
@@ -134,98 +129,59 @@ void derive_op_rrr(const char *name, const char *opcode,
     //output("register dst are bits set in: %x\n", changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
-    d_off = ffs(changed) - 1;
+    offset = ffs(changed) - 1;
 	//printf("d_off: %d", d_off);
     
 	// check that bits are contig and at most 4 bits are set.
-    if(((changed >> d_off) & ~0xf) != 0)
+    if(((changed >> offset) & ~0xf) != 0)
         panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
-    // refine the opcode.
-    op &= never_changed;
-
-	// Mask opcode with dummy call to emit_rrr
-	op &= emit_rrr(opcode, dst[0], s1, s2);
-
-    //output("opcode is in =%x\n", op);
-
-    assert(d && s1 && s2);
-
-    always_0 = ~0;
-	always_1 = ~0;
-	
-	// SRC1 OFFSET
-    for(unsigned i = 0; src1[i]; i++) {
-        uint32_t u = emit_rrr(opcode, d, src1[i], s2);
-
-        // if a bit is always 0 then it will be 1 in always_0
-        always_0 &= ~u;
-
-        // if a bit is always 1 it will be 1 in always_1, otherwise 0
-        always_1 &= u;
-    }
-
-    if(always_0 & always_1) 
-        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
-            always_0, always_1);
-
-    // bits that never changed
-    uint32_t src1_never_changed = always_0 | always_1;
-    // bits that changed: these are the register bits.
-    uint32_t src1_changed = ~src1_never_changed;
-
-    //output("register src1 are bits set in: %x\n", src1_changed);
-
-    // find the offset.  we assume register bits are contig and within 0xf
-    src1_off = ffs(src1_changed) - 1;
-	//printf("src1_off: %d", src1_off);
     
-	// check that bits are contig and at most 4 bits are set.
-    if(((src1_changed >> src1_off) & ~0xf) != 0)
-        panic("weird instruction!  expecting at most 4 contig bits: %x\n", src1_changed);
-    // refine the opcode.
-    //op &= src1_never_changed;
+	// refine the opcode.
+	if(0 == run_number) {
+    	*op &= never_changed;
 
+		// Mask opcode with dummy call to emit_rrr
+		*op &= emit_rrr(opcode, *dst, *src1, *src2);
+
+	}
+	return offset;
+
+}
+
+// overly-specific.  some assumptions:
+//  1. each register is encoded with its number (r0 = 0, r1 = 1)
+//  2. related: all register fields are contiguous.
+//
+// NOTE: you should probably change this so you can emit all instructions 
+// all at once, read in, and then solve all at once.
+//
+// For lab:
+//  1. complete this code so that it solves for the other registers.
+//  2. refactor so that you can reused the solving code vs cut and pasting it.
+//  3. extend system_* so that it returns an error.
+//  4. emit code to check that the derived encoding is correct.
+//  5. emit if statements to checks for illegal registers (those not in <src1>,
+//    <src2>, <dst>).
+void derive_op_rrr(const char *name, const char *opcode, 
+        const char **dst, const char **src1, const char **src2) {
+
+	int run_number = 0;
+    const char *s1 = src1[0];
+    const char *s2 = src2[0];
+    const char *d = dst[0];
+	unsigned op = ~0;
     assert(d && s1 && s2);
-	
-    always_0 = ~0;
-	always_1 = ~0;
-	// SRC2 OFFSET
-    for(unsigned i = 0; src2[i]; i++) {
-        uint32_t u = emit_rrr(opcode, d, s1, src2[i]);
 
-        // if a bit is always 0 then it will be 1 in always_0
-        always_0 &= ~u;
-
-        // if a bit is always 1 it will be 1 in always_1, otherwise 0
-        always_1 &= u;
-    }
-
-    if(always_0 & always_1) 
-        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
-            always_0, always_1);
-
-    // bits that never changed
-    uint32_t src2_never_changed = always_0 | always_1;
-    // bits that changed: these are the register bits.
-    uint32_t src2_changed = ~src2_never_changed;
-
-    //output("register src2 are bits set in: %x\n", src2_changed);
-
-    // find the offset.  we assume register bits are contig and within 0xf
-    src2_off = ffs(src2_changed) - 1;
-	//printf("src2_off: %d", src2_off);
-
-    // check that bits are contig and at most 4 bits are set.
-    if(((src2_changed >> src2_off) & ~0xf) != 0)
-        panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
-    // refine the opcode.
-    //op &= never_changed;
-    // output("opcode is in =%x\n", op);
+	unsigned d_off = solve(run_number, &op, opcode, dst, &s1, &s2);
+	++run_number;
+	unsigned src1_off = solve(run_number, &op, opcode, &d, src1, &s2);
+	++run_number;
+	unsigned src2_off = solve(run_number, &op, opcode, &d, &s1, src2);
 
     // emit: NOTE: obviously, currently <src1_off>, <src2_off> are not 
     // defined (so solve for them) and opcode needs to be refined more.
     output("static int %s(uint32_t dst, uint32_t src1, uint32_t src2) {\n", name);
-    output("    return %x | (dst << %d) | (src1 << %d) | (src2 << %d)\n",
+    output("    return 0x%x | (dst << %d) | (src1 << %d) | (src2 << %d);\n",
                 op,
                 d_off,
                 src1_off,

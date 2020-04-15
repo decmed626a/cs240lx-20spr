@@ -1,1 +1,1 @@
-rsc r0, r0, r15
+rsc r0, r0, r1
