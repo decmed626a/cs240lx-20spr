@@ -40,14 +40,10 @@ void insts_check(char *insts, uint32_t *code, unsigned nbytes) {
 	uint32_t* buf = (uint32_t*)malloc(nbytes);
 	buf = insts_emit(&nbytes, insts);
 	if (0 == memcmp(buf, code, nbytes)) {
-		printf("Success\n");
-		/*
-		printf("success: correctly encoded < ");
-		printf("%d", *insts);
-		printf("> as [ ");
-		printf("%d", *code);
-		printf(" ]");
-		*/
+		//printf("Success\n");
+		
+		printf("success: correctly encoded < %s > as [ 0x%x ]\n", insts, *code);
+		
 	} else {
 		printf("Doesn't match!\n");
 	}

@@ -122,7 +122,7 @@ static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
 
 	inst |= (shifter & 0x7FF);
 	
-	printf("Generated instr: %x\n", inst);
+	//printf("Generated instr: %x\n", inst);
 
 	return inst;
 }
