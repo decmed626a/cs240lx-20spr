@@ -35,7 +35,20 @@ uint32_t *insts_emit(unsigned *nbytes, char *insts) {
  */
 void insts_check(char *insts, uint32_t *code, unsigned nbytes) {
     // make sure you print out something useful on mismatch!
-    unimplemented();
+	uint32_t* buf = (uint32_t*)malloc(nbytes);
+	buf = insts_emit(&nbytes, insts);
+	if (0 == memcmp(buf, code, nbytes)) {
+		printf("Success\n");
+		/*
+		printf("success: correctly encoded < ");
+		printf("%d", *insts);
+		printf("> as [ ");
+		printf("%d", *code);
+		printf(" ]");
+		*/
+	} else {
+		printf("Doesn't match!\n");
+	}
 }
 
 // check a single instruction.
@@ -96,6 +109,7 @@ void derive_op_rrr(const char *name, const char *opcode,
 
     uint32_t always_0 = ~0, always_1 = ~0;
 
+	// DESTINATION OFFSET
     // compute any bits that changed as we vary d.
     for(unsigned i = 0; dst[i]; i++) {
         uint32_t u = emit_rrr(opcode, dst[i], s1, s2);
@@ -120,6 +134,74 @@ void derive_op_rrr(const char *name, const char *opcode,
 
     // find the offset.  we assume register bits are contig and within 0xf
     d_off = ffs(changed);
+    
+    // check that bits are contig and at most 4 bits are set.
+    if(((changed >> d_off) & ~0xf) != 0)
+        panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
+    // refine the opcode.
+    op &= never_changed;
+    output("opcode is in =%x\n", op);
+
+    always_0 = ~0;
+	always_1 = ~0;
+	// SRC1 OFFSET
+    for(unsigned i = 0; src1[i]; i++) {
+        uint32_t u = emit_rrr(opcode, src1[i], s1, s2);
+
+        // if a bit is always 0 then it will be 1 in always_0
+        always_0 &= ~u;
+
+        // if a bit is always 1 it will be 1 in always_1, otherwise 0
+        always_1 &= u;
+    }
+
+    if(always_0 & always_1) 
+        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
+            always_0, always_1);
+
+    // bits that never changed
+    uint32_t src1_never_changed = always_0 | always_1;
+    // bits that changed: these are the register bits.
+    uint32_t src1_changed = ~src1_never_changed;
+
+    output("register src1 are bits set in: %x\n", src1_changed);
+
+    // find the offset.  we assume register bits are contig and within 0xf
+    src1_off = ffs(src1_changed);
+    
+    // check that bits are contig and at most 4 bits are set.
+    if(((src1_changed >> src1_off) & ~0xf) != 0)
+        panic("weird instruction!  expecting at most 4 contig bits: %x\n", src1_changed);
+    // refine the opcode.
+    op &= src1_never_changed;
+    output("opcode is in =%x\n", op);
+
+    always_0 = ~0;
+	always_1 = ~0;
+	// SRC2 OFFSET
+    for(unsigned i = 0; src2[i]; i++) {
+        uint32_t u = emit_rrr(opcode, src2[i], s1, s2);
+
+        // if a bit is always 0 then it will be 1 in always_0
+        always_0 &= ~u;
+
+        // if a bit is always 1 it will be 1 in always_1, otherwise 0
+        always_1 &= u;
+    }
+
+    if(always_0 & always_1) 
+        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
+            always_0, always_1);
+
+    // bits that never changed
+    uint32_t src2_never_changed = always_0 | always_1;
+    // bits that changed: these are the register bits.
+    uint32_t src2_changed = ~src2_never_changed;
+
+    output("register src2 are bits set in: %x\n", src2_changed);
+
+    // find the offset.  we assume register bits are contig and within 0xf
+    src2_off = ffs(src2_changed);
     
     // check that bits are contig and at most 4 bits are set.
     if(((changed >> d_off) & ~0xf) != 0)

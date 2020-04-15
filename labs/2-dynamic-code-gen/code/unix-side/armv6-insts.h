@@ -89,8 +89,50 @@ _Static_assert(arm_mvn_op == 0b1111, "bad num list");
 //
 // we do not do any carries, so S = 0.
 static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
-    assert(arm_add_op == 0b0100);
-    unimplemented();
+	unsigned inst = 0;
+	
+	// Put in condition code
+	inst = (0b1110) << 28;
+	// Put in bit I
+	//inst |= 1 << 25;
+	// Get bits 21 to 24
+	inst |= (0b0100) << 21;
+	// Put in bit S
+	//inst |= 1 << 20;
+	// Put in Rn
+	inst |= rs1 << 16;
+	// Put in Rd
+	inst |= rd << 12;
+
+	// Do shifting operand
+	unsigned shifter = 0;
+	// Put in condition code 
+	shifter = arm_EQ << 28;
+	// Put in opcode
+	shifter |= arm_add_op << 21;
+	// Put in bit S
+	//shifter |= 1 << 20;
+	// Put in Rn
+	shifter |= rs1 << 16;
+	// Put in Rd
+	shifter |= rd << 12;
+	// Put in Rm
+	shifter |= rs2;
+
+	inst |= (shifter & 0x7FF);
+	
+	printf("Generated instr: %x\n", inst);
+
+	return inst;
+
+	/*
+	unsigned inst = 0;
+	inst = 0xffff0fff | (rd << 13) | (rs1 << 13) | (rs2 << 13);
+
+	printf("Generated instr: %x\n", inst);
+
+	return inst;
+	*/
 }
 
 // <add> of an immediate
