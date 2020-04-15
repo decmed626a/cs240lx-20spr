@@ -49,6 +49,7 @@ enum {
 _Static_assert(arm_AL == 0b1110, "bad enum list");
 
 // data processing ops.
+// Don't use tst 
 enum {
     arm_and_op = 0, 
     arm_eor_op,
@@ -89,6 +90,7 @@ _Static_assert(arm_mvn_op == 0b1111, "bad num list");
 //
 // we do not do any carries, so S = 0.
 static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
+	/*
 	unsigned inst = 0;
 	
 	// Put in condition code
@@ -124,15 +126,8 @@ static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
 	printf("Generated instr: %x\n", inst);
 
 	return inst;
-
-	/*
-	unsigned inst = 0;
-	inst = 0xffff0fff | (rd << 13) | (rs1 << 13) | (rs2 << 13);
-
-	printf("Generated instr: %x\n", inst);
-
-	return inst;
 	*/
+	return 0xe0800000 | (rd << 12) | (rs1 << 16) | (rs2 << 0);
 }
 
 // <add> of an immediate

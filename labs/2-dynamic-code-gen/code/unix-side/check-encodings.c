@@ -133,20 +133,28 @@ void derive_op_rrr(const char *name, const char *opcode,
     output("register dst are bits set in: %x\n", changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
-    d_off = ffs(changed);
+    d_off = ffs(changed) - 1;
+	printf("d_off: %d", d_off);
     
-    // check that bits are contig and at most 4 bits are set.
+	// check that bits are contig and at most 4 bits are set.
     if(((changed >> d_off) & ~0xf) != 0)
         panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
     // refine the opcode.
     op &= never_changed;
+
+	// Mask opcode with dummy call to emit_rrr
+	op &= emit_rrr(opcode, dst[0], s1, s2);
+
     output("opcode is in =%x\n", op);
+
+    assert(d && s1 && s2);
 
     always_0 = ~0;
 	always_1 = ~0;
+	
 	// SRC1 OFFSET
     for(unsigned i = 0; src1[i]; i++) {
-        uint32_t u = emit_rrr(opcode, src1[i], s1, s2);
+        uint32_t u = emit_rrr(opcode, d, src1[i], s2);
 
         // if a bit is always 0 then it will be 1 in always_0
         always_0 &= ~u;
@@ -167,20 +175,22 @@ void derive_op_rrr(const char *name, const char *opcode,
     output("register src1 are bits set in: %x\n", src1_changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
-    src1_off = ffs(src1_changed);
+    src1_off = ffs(src1_changed) - 1;
+	printf("src1_off: %d", src1_off);
     
-    // check that bits are contig and at most 4 bits are set.
+	// check that bits are contig and at most 4 bits are set.
     if(((src1_changed >> src1_off) & ~0xf) != 0)
         panic("weird instruction!  expecting at most 4 contig bits: %x\n", src1_changed);
     // refine the opcode.
-    op &= src1_never_changed;
-    output("opcode is in =%x\n", op);
+    //op &= src1_never_changed;
 
+    assert(d && s1 && s2);
+	
     always_0 = ~0;
 	always_1 = ~0;
 	// SRC2 OFFSET
     for(unsigned i = 0; src2[i]; i++) {
-        uint32_t u = emit_rrr(opcode, src2[i], s1, s2);
+        uint32_t u = emit_rrr(opcode, d, s1, src2[i]);
 
         // if a bit is always 0 then it will be 1 in always_0
         always_0 &= ~u;
@@ -201,13 +211,14 @@ void derive_op_rrr(const char *name, const char *opcode,
     output("register src2 are bits set in: %x\n", src2_changed);
 
     // find the offset.  we assume register bits are contig and within 0xf
-    src2_off = ffs(src2_changed);
-    
+    src2_off = ffs(src2_changed) - 1;
+	printf("src2_off: %d", src2_off);
+
     // check that bits are contig and at most 4 bits are set.
-    if(((changed >> d_off) & ~0xf) != 0)
+    if(((src2_changed >> src2_off) & ~0xf) != 0)
         panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
     // refine the opcode.
-    op &= never_changed;
+    //op &= never_changed;
     output("opcode is in =%x\n", op);
 
     // emit: NOTE: obviously, currently <src1_off>, <src2_off> are not 
