@@ -84,6 +84,18 @@ uint32_t emit_rrr(const char* op, const char *d, const char *s1, const char *s2)
     return *c;
 }
 
+// helper function for reverse engineering.  you should refactor its interface
+// so your code is better.
+uint32_t emit_2rr(const char* op, const char *d, const char *s1) {
+    char buf[1024];
+    sprintf(buf, "%s %s, %s", op, d, s1);
+
+    uint32_t n;
+    uint32_t *c = insts_emit(&n, buf);
+    assert(n == 4);
+    return *c;
+}
+
 unsigned solve(int run_number, unsigned* op, const char* opcode, const char** dst, const char** src1, const char** src2) {
 	
 	unsigned offset = 0;
@@ -148,6 +160,66 @@ unsigned solve(int run_number, unsigned* op, const char* opcode, const char** ds
 
 }
 
+unsigned solve_2rr(int run_number, unsigned* op, const char* opcode, const char** dst, const char** src1) {
+	
+	unsigned offset = 0;
+
+	const char* temp;
+	if(0 == run_number) {
+		temp = *dst;
+	} else {
+		temp = *src1;
+	}
+
+    uint32_t always_0 = ~0, always_1 = ~0;
+
+	// DESTINATION OFFSET
+    // compute any bits that changed as we vary d.
+    for(unsigned i = 0; temp[i]; i++) {
+		uint32_t u = 0;
+		if(0 == run_number) {
+        	u = emit_2rr(opcode, dst[i], *src1);
+		} else {
+        	u = emit_2rr(opcode, *dst, src1[i]);
+		}
+        // if a bit is always 0 then it will be 1 in always_0
+        always_0 &= ~u;
+
+        // if a bit is always 1 it will be 1 in always_1, otherwise 0
+        always_1 &= u;
+    }
+
+    if(always_0 & always_1) 
+        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
+            always_0, always_1);
+
+    // bits that never changed
+    uint32_t never_changed = always_0 | always_1;
+    // bits that changed: these are the register bits.
+    uint32_t changed = ~never_changed;
+
+    //output("register dst are bits set in: %x\n", changed);
+
+    // find the offset.  we assume register bits are contig and within 0xf
+    offset = ffs(changed) - 1;
+	//printf("d_off: %d", d_off);
+    
+	// check that bits are contig and at most 4 bits are set.
+    // TODO: IS THIS NEEDED for cmn, orr, and bic?
+	//if(((changed >> offset) & ~0xf) != 0)
+    //    panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
+    
+	// refine the opcode.
+	if(0 == run_number) {
+    	*op &= never_changed;
+
+		// Mask opcode with dummy call to emit_rrr
+		*op &= emit_2rr(opcode, *dst, *src1);
+
+	}
+	return offset;
+}
+
 // overly-specific.  some assumptions:
 //  1. each register is encoded with its number (r0 = 0, r1 = 1)
 //  2. related: all register fields are contiguous.
@@ -186,6 +258,29 @@ void derive_op_rrr(const char *name, const char *opcode,
                 d_off,
                 src1_off,
                 src2_off);
+    output("}\n");
+}
+
+void derive_op_2rr(const char *name, const char *opcode, 
+        const char **dst, const char **src1) {
+
+	int run_number = 0;
+    const char *s1 = src1[0];
+    const char *d = dst[0];
+	unsigned op = ~0;
+    assert(d && s1);
+
+	unsigned d_off = solve_2rr(run_number, &op, opcode, dst, &s1);
+	++run_number;
+	unsigned src1_off = solve_2rr(run_number, &op, opcode, &d, src1);
+
+    // emit: NOTE: obviously, currently <src1_off>, <src2_off> are not 
+    // defined (so solve for them) and opcode needs to be refined more.
+    output("static int %s(uint32_t dst, uint32_t src1) {\n", name);
+    output("    return 0x%x | (dst << %d) | (src1 << %d);\n",
+                op,
+                d_off,
+                src1_off);
     output("}\n");
 }
 
@@ -264,6 +359,17 @@ int main(void) {
     derive_op_rrr("arm_adc", "adc", all_regs,all_regs,all_regs);
     derive_op_rrr("arm_sbc", "sbc", all_regs,all_regs,all_regs);
     derive_op_rrr("arm_rsc", "rsc", all_regs,all_regs,all_regs);
+    derive_op_2rr("arm_tst", "tst", all_regs,all_regs);
+    derive_op_2rr("arm_teq", "teq", all_regs,all_regs);
+    derive_op_2rr("arm_cmp", "cmp", all_regs,all_regs);
+    // cmn triggers contiguous 4 bit warning
+	derive_op_2rr("arm_cmn", "cmn", all_regs,all_regs);
+    // orr triggers contiguous 4 bit warning
+    derive_op_2rr("arm_orr", "orr", all_regs,all_regs);
+    derive_op_2rr("arm_mov", "mov", all_regs,all_regs);
+    // bic triggers contiguous 4 bit warning
+    derive_op_2rr("arm_bic", "bic", all_regs,all_regs);
+    derive_op_2rr("arm_mvn", "mvn", all_regs,all_regs);
     output("did something: now use the generated code in the checks above!\n");
 
     // get encodings for other instructions, loads, stores, branches, etc.
