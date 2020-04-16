@@ -45,7 +45,7 @@ void insts_check(char *insts, uint32_t *code, unsigned nbytes) {
 		printf("success: correctly encoded < %s > as [ 0x%x ]\n", insts, *code);
 		
 	} else {
-		printf("Doesn't match!\n");
+		printf("failure: encoded < %s > as [ 0x%x ], should be [ 0x%x ]\n", insts, *code, *buf);
 	}
 }
 
@@ -307,6 +307,7 @@ void derive_op_2rr(const char *name, const char *opcode,
  *      - able to do a non-linking function call.
  */
 int main(void) {
+#if 0
     // part 1: implement the code to do this.
     output("-----------------------------------------\n");
     output("part1: checking: correctly generating assembly.\n");
@@ -388,5 +389,10 @@ int main(void) {
     check_one_inst("bic r0, r1", arm_bic(arm_r0, arm_r1));
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
 	// get encodings for other instructions, loads, stores, branches, etc.
-    return 0;
+  #endif 
+	output("\n-----------------------------------------\n");
+    output("part5: checking that we can generate a <bx lr> by hand\n");
+    check_one_inst("bx lr", arm_bx(14));
+    
+	return 0;
 }

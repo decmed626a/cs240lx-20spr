@@ -134,7 +134,13 @@ static inline uint32_t arm_add_imm8(uint8_t rd, uint8_t rs1, uint8_t imm) {
 }
 
 static inline uint32_t arm_bx(uint8_t reg) {
-    unimplemented();
+	uint32_t inst = 0;
+	inst = (0b1110) << 28;
+	inst |= (0b00010010)<<20;
+	inst |= (0xfff) << 8;
+	inst |= (0b0001)<<4;
+	inst |= (reg & 0b1111);
+	return inst;
 }
 
 // load an or immediate and rotate it.
