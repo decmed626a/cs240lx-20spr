@@ -159,6 +159,39 @@ static inline uint32_t arm_b(uint32_t pc, uint32_t imm24) {
 	return inst;
 }
 
+static inline uint32_t arm_bl(uint32_t pc, uint32_t imm24) {
+	uint32_t inst = 0;
+	uint32_t value = imm24 & ~(0x20000000);
+	//printf("value is: %x\n", value);
+	value |= (0xFFFFFFFF - 0x2000000);
+	//printf("value is: %x\n", value);
+	value = (value << 2) + 2;
+	//printf("value is: %x\n", value);
+		//value += pc; 
+		//printf("value is: %x\n", value);
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= 1 << 24;
+	inst |= value & 0xFFFFFF;
+	return inst;
+}
+
+static inline uint32_t arm_blx(uint32_t imm24) {
+	uint32_t inst = 0;
+	uint32_t value = imm24 & ~(0x20000000);
+	//printf("value is: %x\n", value);
+	value |= (0xFFFFFFFF - 0x2000000);
+	//printf("value is: %x\n", value);
+	value = (value << 2) + 2;
+	//printf("value is: %x\n", value);
+		//value += pc; 
+		//printf("value is: %x\n", value);
+	inst = (0b1111) << 28;
+	inst |= (0b101) << 25;
+	inst |= value & 0xFFFFFF;
+	return inst;
+}
+
 // From page A7-50 of armv6 manual
 static inline uint32_t arm_ldr2(uint8_t rd, uint8_t rn, uint8_t rm) {
 	uint32_t inst = 0;

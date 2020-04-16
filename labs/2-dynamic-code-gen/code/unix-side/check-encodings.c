@@ -398,6 +398,16 @@ int main(void) {
     check_one_inst("b 0xdeadbeef", arm_b(15, 0xdeadbeef));
     check_one_inst("b 0xc001d00d", arm_b(15, 0xc001d00d));
     check_one_inst("b 0xffffffff", arm_b(15, 0xffffffff));
+    check_one_inst("bl 0x12bb", arm_bl(15, 0x12bb));
+    check_one_inst("bl 0x0", arm_bl(15, 0x0));
+    check_one_inst("bl 0xdeadbeef", arm_bl(15, 0xdeadbeef));
+    check_one_inst("bl 0xc001d00d", arm_bl(15, 0xc001d00d));
+    check_one_inst("bl 0xffffffff", arm_bl(15, 0xffffffff));
+    check_one_inst("blx 0x12bb", arm_blx(0x12bb));
+    check_one_inst("blx 0x0", arm_blx(0x0));
+    check_one_inst("blx 0xdeadbeef", arm_blx(0xdeadbeef));
+    check_one_inst("blx 0xc001d00d", arm_blx(0xc001d00d));
+    check_one_inst("blx 0xffffffff", arm_blx(0xffffffff));
     check_one_inst("ldr r1, [r2]", arm_ldr_word_single(1, 2));
     check_one_inst("str r1, [r2]", arm_str_word_single(1, 2));
     check_one_inst("ldr r1, [r2, #50]", arm_ldr_word_imm(1, 2, 50));
