@@ -45,7 +45,7 @@ void insts_check(char *insts, uint32_t *code, unsigned nbytes) {
 		printf("success: correctly encoded < %s > as [ 0x%x ]\n", insts, *code);
 		
 	} else {
-		printf("failure: encoded < %s > as [ 0x%x ], should be [ 0x%x ]\n", insts, *code, *buf);
+		printf("failure: < %s > should be [ 0x%x ], not [ 0x%x ]\n", insts, *buf, *code);
 	}
 }
 
@@ -393,6 +393,9 @@ int main(void) {
 	output("\n-----------------------------------------\n");
     output("part5: checking that we can generate a <bx lr> by hand\n");
     check_one_inst("bx lr", arm_bx(14));
+    check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
+    check_one_inst("ldr r1, [r2, r3]", arm_ldr2(1, 2, 3));
+    //check_one_inst("ldr r1, [r2, #50]", arm_ldr1(1, 2, 50));
     
 	return 0;
 }
