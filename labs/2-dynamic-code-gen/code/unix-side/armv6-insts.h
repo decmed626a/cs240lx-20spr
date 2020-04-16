@@ -146,11 +146,11 @@ static inline uint32_t arm_bx(uint8_t reg) {
 static inline uint32_t arm_b(uint32_t pc, uint32_t imm24) {
 	uint32_t inst = 0;
 	uint32_t value = imm24 & ~(0x20000000);
-	printf("value is: %x\n", value);
+	//printf("value is: %x\n", value);
 	value |= (0xFFFFFFFF - 0x2000000);
-	printf("value is: %x\n", value);
+	//printf("value is: %x\n", value);
 	value = (value << 2) + 2;
-	printf("value is: %x\n", value);
+	//printf("value is: %x\n", value);
 		//value += pc; 
 		//printf("value is: %x\n", value);
 	inst = (0b1110) << 28;
@@ -169,19 +169,84 @@ static inline uint32_t arm_ldr2(uint8_t rd, uint8_t rn, uint8_t rm) {
 	return inst;
 }
 
-static inline uint32_t arm_ldr1(uint8_t rd, uint8_t rn, uint8_t imm5) {
-	/*
-	uint32_t inst = 0;
-	inst = (0b01001) << 11;
-	inst |= (rd & (0b111)) << 8;
-	inst |= imm8;
-	*/
+static inline uint32_t arm_ldr_word_single(uint8_t rd, uint8_t rn) {
 	
 	uint32_t inst = 0;
-	inst |= (0b111001011001) << 20;
+	inst |= (0b1110) << 28;
+	inst |= (0b0101) << 24;
+	inst |= (0b1001) << 20;
+
 	inst |= (rn & 0b1111) << 16;
 	inst |= (rd & 0b1111) << 12;
-	inst |= (((imm5 * 4) & 0b11111)) << 2;
+
+	return inst;
+}
+
+static inline uint32_t arm_ldr_word_imm(uint8_t rd, uint8_t rn, uint32_t offset_12) {
+	
+	uint32_t inst = 0;
+	inst |= (0b1110) << 28;
+	inst |= (0b0101) << 24;
+	inst |= (0b1001) << 20;
+
+	inst |= (rn & 0b1111) << 16;
+	inst |= (rd & 0b1111) << 12;
+	inst |= offset_12;
+
+	return inst;
+}
+
+static inline uint32_t arm_ldr_word_reg(uint8_t rd, uint8_t rn, uint8_t rm) {
+	
+	uint32_t inst = 0;
+	inst |= (0b1110) << 28;
+	inst |= (0b0111) << 24;
+	inst |= (0b1001) << 20;
+
+	inst |= (rn & 0b1111) << 16;
+	inst |= (rd & 0b1111) << 12;
+	inst |= rm;
+
+	return inst;
+}
+
+static inline uint32_t arm_str_word_imm(uint8_t rd, uint8_t rn, uint32_t offset_12) {
+	
+	uint32_t inst = 0;
+	inst |= (0b1110) << 28;
+	inst |= (0b0101) << 24;
+	inst |= (0b1000) << 20;
+
+	inst |= (rn & 0b1111) << 16;
+	inst |= (rd & 0b1111) << 12;
+	inst |= offset_12;
+
+	return inst;
+}
+
+static inline uint32_t arm_str_word_reg(uint8_t rd, uint8_t rn, uint8_t rm) {
+	
+	uint32_t inst = 0;
+	inst |= (0b1110) << 28;
+	inst |= (0b0111) << 24;
+	inst |= (0b1000) << 20;
+
+	inst |= (rn & 0b1111) << 16;
+	inst |= (rd & 0b1111) << 12;
+	inst |= rm;
+
+	return inst;
+}
+
+static inline uint32_t arm_str_word_single(uint8_t rd, uint8_t rn) {
+	
+	uint32_t inst = 0;
+	inst |= (0b1110) << 28;
+	inst |= (0b0101) << 24;
+	inst |= (0b1000) << 20;
+
+	inst |= (rn & 0b1111) << 16;
+	inst |= (rd & 0b1111) << 12;
 
 	return inst;
 }

@@ -394,8 +394,16 @@ int main(void) {
     output("part5: checking that we can generate a <bx lr> by hand\n");
     check_one_inst("bx lr", arm_bx(14));
     check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
-    check_one_inst("ldr r1, [r2, r3]", arm_ldr2(1, 2, 3));
-    //check_one_inst("ldr r1, [r2, #50]", arm_ldr1(1, 2, 50));
+    check_one_inst("b 0x0", arm_b(15, 0x0));
+    check_one_inst("b 0xdeadbeef", arm_b(15, 0xdeadbeef));
+    check_one_inst("b 0xc001d00d", arm_b(15, 0xc001d00d));
+    check_one_inst("b 0xffffffff", arm_b(15, 0xffffffff));
+    check_one_inst("ldr r1, [r2]", arm_ldr_word_single(1, 2));
+    check_one_inst("str r1, [r2]", arm_str_word_single(1, 2));
+    check_one_inst("ldr r1, [r2, #50]", arm_ldr_word_imm(1, 2, 50));
+    check_one_inst("str r1, [r2, #50]", arm_str_word_imm(1, 2, 50));
+    check_one_inst("ldr r1, [r2, r3]", arm_ldr_word_reg(1, 2, 3));
+    check_one_inst("str r1, [r2, r3]", arm_str_word_reg(1, 2, 3));
     
 	return 0;
 }
