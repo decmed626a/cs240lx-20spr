@@ -9,6 +9,7 @@ void hello(void) {
 // ldr figured out.
 void foo(int x) { 
     printk("foo was passed %d\n", x);
+	clean_reboot();
 }
 
 void notmain(void) {
@@ -18,9 +19,14 @@ void notmain(void) {
     // 3. call printk
     static uint32_t code[16];
     unsigned n = 0;
-
-    unimplemented();
-
+	code[n++]= arm_push(arm_r3);
+	code[n++]= arm_push(arm_lr);
+	code[n++] = arm_ldr_word_imm(arm_r0, arm_pc, 4);
+	code[n] = arm_b3(1,(int) &code[n], (int)printk);
+	code[n++] = arm_pop(arm_r3);
+	code[n++] = arm_pop(arm_pc);
+	code[n] = (uint32_t)"hello world\n";
+	
     printk("emitted code:\n");
     for(int i = 0; i < n; i++) 
         printk("code[%d]=0x%x\n", i, code[i]);

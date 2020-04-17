@@ -93,6 +93,16 @@ uint32_t emit_2rr(const char* op, const char *d, const char *s1) {
     return *c;
 }
 
+uint32_t emit_rr(const char* op, const char *d) {
+    char buf[1024];
+    sprintf(buf, "%s %s", op, d);
+
+    uint32_t n;
+    uint32_t *c = insts_emit(&n, buf);
+    assert(n == 4);
+    return *c;
+}
+
 unsigned solve(int run_number, unsigned* op, const char* opcode, const char** dst, const char** src1, const char** src2) {
 	
 	unsigned offset = 0;
@@ -217,6 +227,56 @@ unsigned solve_2rr(int run_number, unsigned* op, const char* opcode, const char*
 	return offset;
 }
 
+unsigned solve_1rr(int run_number, unsigned* op, const char* opcode, const char** dst) {
+	
+	unsigned offset = 0;
+
+	const char* temp;
+	temp = *dst;
+
+    uint32_t always_0 = ~0, always_1 = ~0;
+
+	// DESTINATION OFFSET
+    // compute any bits that changed as we vary d.
+    for(unsigned i = 0; temp[i]; i++) {
+		uint32_t u = 0;
+        u = emit_rr(opcode, dst[i]);
+        // if a bit is always 0 then it will be 1 in always_0
+        always_0 &= ~u;
+
+        // if a bit is always 1 it will be 1 in always_1, otherwise 0
+        always_1 &= u;
+    }
+
+    if(always_0 & always_1) 
+        panic("impossible overlap: always_0 = %x, always_1 %x\n", 
+            always_0, always_1);
+
+    // bits that never changed
+    uint32_t never_changed = always_0 | always_1;
+    // bits that changed: these are the register bits.
+    uint32_t changed = ~never_changed;
+
+    //output("register dst are bits set in: %x\n", changed);
+
+    // find the offset.  we assume register bits are contig and within 0xf
+    offset = ffs(changed) - 1;
+	//printf("d_off: %d", d_off);
+    
+	// check that bits are contig and at most 4 bits are set.
+    // TODO: IS THIS NEEDED for cmn, orr, and bic?
+	//if(((changed >> offset) & ~0xf) != 0)
+    //    panic("weird instruction!  expecting at most 4 contig bits: %x\n", changed);
+    
+	// refine the opcode.
+    *op &= never_changed;
+
+		// Mask opcode with dummy call to emit_rrr
+	*op &= emit_rr(opcode, *dst);
+	
+	return offset;
+}
+
 // overly-specific.  some assumptions:
 //  1. each register is encoded with its number (r0 = 0, r1 = 1)
 //  2. related: all register fields are contiguous.
@@ -281,6 +341,24 @@ void derive_op_2rr(const char *name, const char *opcode,
     output("}\n");
 }
 
+void derive_op_1rr(const char *name, const char *opcode, 
+        const char **dst) {
+
+	int run_number = 0;
+    const char *d = dst[0];
+	unsigned op = ~0;
+    assert(d);
+
+	unsigned d_off = solve_1rr(run_number, &op, opcode, dst);
+
+    // emit: NOTE: obviously, currently <src1_off>, <src2_off> are not 
+    // defined (so solve for them) and opcode needs to be refined more.
+    output("static int %s(uint32_t dst, uint32_t src1) {\n", name);
+    output("    return 0x%x | (dst << %d);\n",
+                op,
+                d_off);
+    output("}\n");
+}
 /*
  * 1. we start by using the compiler / assembler tool chain to get / check
  *    instruction encodings.  this is sleazy and low-rent.   however, it 
@@ -307,7 +385,6 @@ void derive_op_2rr(const char *name, const char *opcode,
  *      - able to do a non-linking function call.
  */
 int main(void) {
-#if 0
     // part 1: implement the code to do this.
     output("-----------------------------------------\n");
     output("part1: checking: correctly generating assembly.\n");
@@ -368,8 +445,8 @@ int main(void) {
     // bic triggers contiguous 4 bit warning
     derive_op_2rr("arm_bic", "bic", all_regs,all_regs);
     derive_op_2rr("arm_mvn", "mvn", all_regs,all_regs);
+    //derive_op_1rr("arm_bx", "bx", &(all_regs[13]));
     output("did something: now use the generated code in the checks above!\n");
-
 	// check generated instructions
     check_one_inst("and r0, r1, r2", arm_and(arm_r0, arm_r1, arm_r2));
     check_one_inst("eor r0, r1, r2", arm_eor(arm_r0, arm_r1, arm_r2));
@@ -388,10 +465,31 @@ int main(void) {
     check_one_inst("mov r0, r1", arm_mov(arm_r0, arm_r1));
     check_one_inst("bic r0, r1", arm_bic(arm_r0, arm_r1));
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
+    check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
 	// get encodings for other instructions, loads, stores, branches, etc.
-  #endif 
+	
 	output("\n-----------------------------------------\n");
     output("part5: checking that we can generate a <bx lr> by hand\n");
+    check_one_inst("push {r0}", arm_push(arm_r0));
+    check_one_inst("push {r1}", arm_push(arm_r1));
+    check_one_inst("push {r2}", arm_push(arm_r2));
+    check_one_inst("push {r3}", arm_push(arm_r3));
+    check_one_inst("push {r4}", arm_push(arm_r4));
+    check_one_inst("push {r5}", arm_push(arm_r5));
+    check_one_inst("push {r6}", arm_push(arm_r6));
+    check_one_inst("push {r7}", arm_push(arm_r7));
+    check_one_inst("push {lr}", arm_push(arm_lr));
+    check_one_inst("push {pc}", arm_push(arm_pc));
+    check_one_inst("pop {r0}", arm_pop(arm_r0));
+    check_one_inst("pop {r1}", arm_pop(arm_r1));
+    check_one_inst("pop {r2}", arm_pop(arm_r2));
+    check_one_inst("pop {r3}", arm_pop(arm_r3));
+    check_one_inst("pop {r4}", arm_pop(arm_r4));
+    check_one_inst("pop {r5}", arm_pop(arm_r5));
+    check_one_inst("pop {r6}", arm_pop(arm_r6));
+    check_one_inst("pop {r7}", arm_pop(arm_r7));
+    check_one_inst("pop {lr}", arm_pop(arm_lr));
+    check_one_inst("pop {pc}", arm_pop(arm_pc));
     check_one_inst("bx lr", arm_bx(14));
     check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
     check_one_inst("b 0x0", arm_b(15, 0x0));
@@ -410,10 +508,16 @@ int main(void) {
     check_one_inst("blx 0xffffffff", arm_blx(0xffffffff));
     check_one_inst("ldr r1, [r2]", arm_ldr_word_single(1, 2));
     check_one_inst("str r1, [r2]", arm_str_word_single(1, 2));
-    check_one_inst("ldr r1, [r2, #50]", arm_ldr_word_imm(1, 2, 50));
+    check_one_inst("ldr r0, [pc, #0]", arm_ldr_word_imm(0, arm_pc, 0));
     check_one_inst("str r1, [r2, #50]", arm_str_word_imm(1, 2, 50));
     check_one_inst("ldr r1, [r2, r3]", arm_ldr_word_reg(1, 2, 3));
-    check_one_inst("str r1, [r2, r3]", arm_str_word_reg(1, 2, 3));
-    
+	check_one_inst("b label; label: ", arm_b_srcdest(0,4));
+	check_one_inst("bl label; label: ", arm_bl_srcdest(0,4));
+	check_one_inst("label: b label; ", arm_b_srcdest(0,0));
+	check_one_inst("label: bl label; ", arm_bl_srcdest(0,0));
+	check_one_inst("ldr r0, [pc,#0]", arm_ldr_word_imm(arm_r0, arm_r15, 0));
+	check_one_inst("ldr r0, [pc,#256]", arm_ldr_word_imm(arm_r0, arm_r15, 256));
+	output("\n-----------------------------------------\n");
+    output("part6: checking that we can generate a <bx lr> by hand\n");
 	return 0;
 }

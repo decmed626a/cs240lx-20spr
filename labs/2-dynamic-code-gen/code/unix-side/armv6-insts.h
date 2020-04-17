@@ -127,6 +127,10 @@ static inline unsigned arm_add(uint8_t rd, uint8_t rs1, uint8_t rs2) {
 	return inst;
 }
 
+static inline uint32_t arm_b_bl(uint32_t L, uint32_t src_addr, uint32_t target_addr) {
+    uint32_t u = (arm_AL << 28) | (L << 24) | (0b101 << 25);
+	return u;
+}
 
 // <add> of an immediate
 static inline uint32_t arm_add_imm8(uint8_t rd, uint8_t rs1, uint8_t imm) {
@@ -159,6 +163,38 @@ static inline uint32_t arm_b(uint32_t pc, uint32_t imm24) {
 	return inst;
 }
 
+static inline uint32_t arm_b_srcdest(int32_t src, int32_t dest) {
+	uint32_t inst = 0;
+	int32_t immed = (~0u >> 8) & ((dest - src - 8));
+	uint32_t uimmed = (uint32_t)immed >> 2;
+	/*
+	uint32_t value = dist & ~(0x20000000);
+	//printf("value is: %x\n", value);
+	value |= (0xFFFFFFFF - 0x2000000);
+	//printf("value is: %x\n", value);
+	value = (value << 2) + dist;
+	//printf("value is: %x\n", value);
+		//value += pc; 
+		//printf("value is: %x\n", value);
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= value & 0xFFFFFF;
+	*/
+	
+	/*
+	int32_t signed_dist = dist & (0x3FFFFFFF);
+	signed_dist = signed_dist >> 2;
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= (signed_dist - 2) & 0xFFFFFF;
+	*/
+
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= uimmed & 0xFFFFFF;
+	return inst;
+}
+
 static inline uint32_t arm_bl(uint32_t pc, uint32_t imm24) {
 	uint32_t inst = 0;
 	uint32_t value = imm24 & ~(0x20000000);
@@ -174,6 +210,50 @@ static inline uint32_t arm_bl(uint32_t pc, uint32_t imm24) {
 	inst |= 1 << 24;
 	inst |= value & 0xFFFFFF;
 	return inst;
+}
+
+static inline uint32_t arm_b3(uint32_t L, int32_t src, int32_t dest) {
+	uint32_t inst = 0;
+	//uint32_t immed = (~0u >> 8) & ((dest - src - 8)>>2);
+	/*
+	int32_t immed = (~0u >> 8) & ((dest - src - 8));
+	uint32_t uimmed = (uint32_t)immed >> 2;
+	*/
+	//uint32_t value = dist & ~(0x20000000);
+	//printf("value is: %x\n", value);
+	//value |= (0xFFFFFFFF - 0x2000000);
+	//printf("value is: %x\n", value);
+	//value = (value << 2) + 2;
+	//printf("value is: %x\n", value);
+		//value += pc; 
+		//printf("value is: %x\n", value);
+	
+	/*
+	int32_t signed_dist = dist & (0x3FFFFFFF);
+	signed_dist = signed_dist >> 2;
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= 1 << 24;
+	inst |= (signed_dist - 2) & 0xFFFFFF;
+	*/
+
+	/*
+	inst = (0b1110) << 28;
+	inst |= (0b101) << 25;
+	inst |= 1 << 24;
+	inst |= uimmed & 0xFFFFFF;
+	*/
+	int pc = src + 8;
+	int offset = dest - pc;
+	unsigned imm24 = offset; 
+	imm24 = imm24 >> 2;
+	imm24 &= (~0U >> 8);
+	uint32_t u = (arm_AL << 28) | (L << 24) | (0b101 << 25);
+	return u | imm24;
+}
+
+static inline uint32_t arm_bl3(uint32_t L, int32_t src, int32_t dest) {
+	return arm_b3(1, src, dest);
 }
 
 static inline uint32_t arm_blx(uint32_t imm24) {
@@ -232,6 +312,11 @@ static inline uint32_t arm_ldr_word_imm(uint8_t rd, uint8_t rn, uint32_t offset_
 static inline uint32_t arm_ldr_word_reg(uint8_t rd, uint8_t rn, uint8_t rm) {
 	
 	uint32_t inst = 0;
+	
+	assert(rd < 16);
+	assert(rn < 16);
+	assert(rm < 16);
+
 	inst |= (0b1110) << 28;
 	inst |= (0b0111) << 24;
 	inst |= (0b1001) << 20;
@@ -280,6 +365,38 @@ static inline uint32_t arm_str_word_single(uint8_t rd, uint8_t rn) {
 
 	inst |= (rn & 0b1111) << 16;
 	inst |= (rd & 0b1111) << 12;
+
+	return inst;
+}
+
+static inline uint32_t arm_push(uint8_t reg) {
+	
+	uint32_t inst = 0;
+	inst |= (0b11100101001011010) << 15;
+
+	//if(reg == arm_lr) {
+	//	inst |= 1 << 8;
+	//}
+	
+	inst |= (reg) << 12;
+
+	inst |= 4;
+
+	return inst;
+}
+
+static inline uint32_t arm_pop(uint8_t reg) {
+	
+	uint32_t inst = 0;
+	inst |= (0b11100100100111010) << 15;
+
+	//if(reg == arm_lr) {
+	//	inst |= 1 << 8;
+	//}
+	
+	inst |= (reg) << 12;
+
+	inst |= 4;
 
 	return inst;
 }
