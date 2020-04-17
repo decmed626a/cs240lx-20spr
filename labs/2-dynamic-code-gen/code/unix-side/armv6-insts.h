@@ -374,10 +374,6 @@ static inline uint32_t arm_push(uint8_t reg) {
 	uint32_t inst = 0;
 	inst |= (0b11100101001011010) << 15;
 
-	//if(reg == arm_lr) {
-	//	inst |= 1 << 8;
-	//}
-	
 	inst |= (reg) << 12;
 
 	inst |= 4;

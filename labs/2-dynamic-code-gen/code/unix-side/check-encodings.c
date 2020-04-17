@@ -385,7 +385,8 @@ void derive_op_1rr(const char *name, const char *opcode,
  *      - able to do a non-linking function call.
  */
 int main(void) {
-    // part 1: implement the code to do this.
+#if 0
+	// part 1: implement the code to do this.
     output("-----------------------------------------\n");
     output("part1: checking: correctly generating assembly.\n");
     //insts_print("add r0, r0, r1");
@@ -398,7 +399,6 @@ int main(void) {
 	output("\n");
     output("success!\n");
 
-#if 0
     // part 2: implement the code so these checks pass.
     // these should all pass.
     output("\n-----------------------------------------\n");
@@ -471,7 +471,7 @@ int main(void) {
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
 	// get encodings for other instructions, loads, stores, branches, etc.
-	
+#endif 	
 	output("\n-----------------------------------------\n");
     output("part5: checking that we can generate a <bx lr> by hand\n");
     check_one_inst("push {r0}", arm_push(arm_r0));
@@ -494,7 +494,8 @@ int main(void) {
     check_one_inst("pop {r7}", arm_pop(arm_r7));
     check_one_inst("pop {lr}", arm_pop(arm_lr));
     check_one_inst("pop {pc}", arm_pop(arm_pc));
-    check_one_inst("bx lr", arm_bx(14));
+#if 0
+	check_one_inst("bx lr", arm_bx(14));
     check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
     check_one_inst("b 0x0", arm_b(15, 0x0));
     check_one_inst("b 0xdeadbeef", arm_b(15, 0xdeadbeef));
