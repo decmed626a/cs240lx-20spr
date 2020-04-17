@@ -12,14 +12,16 @@ SECTIONS
     /* our simple a.out header.  will add as needed. */
     .crt0_header LINK_ADDR : {
         /* magic cookie for sanity checking */
-        LONG(0x12345678);
-        /* 
+		
+		LONG(0xEA000000 | (SIZEOF(.crt0_header) - 8) >> 2);
+		
+		/* 
          * the second word is the size of the header.  this lets us avoid changing
          * a bunch of code as we add fields.  You should copy the entire header
          * and just jump over it.
          */
         LONG(SIZEOF(.crt0_header));
-
+	
         /* Where we are linked at */
         LONG(LINK_ADDR);
         /* 
@@ -30,7 +32,18 @@ SECTIONS
         LONG(SIZEOF(.text) + SIZEOF(.data) + SIZEOF(.rodata) );
 
         /* can add stuff below and loader should still work */
-    }
+		BYTE(0x68);
+		BYTE(0x65);
+		BYTE(0x6C);
+		BYTE(0x6C);
+		BYTE(0x6F);
+		BYTE(0x20);
+		BYTE(0x77);
+		BYTE(0x6F);
+		BYTE(0x72);
+		BYTE(0x6C);
+		BYTE(0x64);
+	}
 	.text :  { KEEP(*(.text.boot))  *(.text*) }
     .data :   { . = ALIGN(4); *(.data*)   . = ALIGN(4); } 
     .rodata : { . = ALIGN(4); *(.rodata*) . = ALIGN(4); }

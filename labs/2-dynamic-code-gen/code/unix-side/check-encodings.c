@@ -388,13 +388,17 @@ int main(void) {
     // part 1: implement the code to do this.
     output("-----------------------------------------\n");
     output("part1: checking: correctly generating assembly.\n");
-    insts_print("add r0, r0, r1");
-    insts_print("bx lr");
-    insts_print("mov r0, #1");
-    insts_print("nop");
-    output("\n");
+    //insts_print("add r0, r0, r1");
+    //insts_print("bx lr");
+    //insts_print("mov r0, #1");
+    //insts_print("nop");
+    
+	insts_print("b 0x8000");
+	
+	output("\n");
     output("success!\n");
 
+#if 0
     // part 2: implement the code so these checks pass.
     // these should all pass.
     output("\n-----------------------------------------\n");
@@ -519,5 +523,6 @@ int main(void) {
 	check_one_inst("ldr r0, [pc,#256]", arm_ldr_word_imm(arm_r0, arm_r15, 256));
 	output("\n-----------------------------------------\n");
     output("part6: checking that we can generate a <bx lr> by hand\n");
+#endif
 	return 0;
 }
