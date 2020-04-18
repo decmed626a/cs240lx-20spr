@@ -471,7 +471,6 @@ int main(void) {
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
     check_one_inst("mvn r0, r1", arm_mvn(arm_r0, arm_r1));
 	// get encodings for other instructions, loads, stores, branches, etc.
-#endif 	
 	output("\n-----------------------------------------\n");
     output("part5: checking that we can generate a <bx lr> by hand\n");
     check_one_inst("push {r0}", arm_push(arm_r0));
@@ -494,9 +493,10 @@ int main(void) {
     check_one_inst("pop {r7}", arm_pop(arm_r7));
     check_one_inst("pop {lr}", arm_pop(arm_lr));
     check_one_inst("pop {pc}", arm_pop(arm_pc));
-#if 0
+#endif
 	check_one_inst("bx lr", arm_bx(14));
-    check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
+#if 0
+	check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
     check_one_inst("b 0x0", arm_b(15, 0x0));
     check_one_inst("b 0xdeadbeef", arm_b(15, 0xdeadbeef));
     check_one_inst("b 0xc001d00d", arm_b(15, 0xc001d00d));

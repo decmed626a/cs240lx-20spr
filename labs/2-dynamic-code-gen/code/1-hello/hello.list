@@ -2114,14 +2114,14 @@ Disassembly of section .debug_info:
      260:	73fb0200 	mvnsvc	r0, #0, 4
      264:	00000000 	andeq	r0, r0, r0
      268:	0002660c 	andeq	r6, r2, ip, lsl #12
-     26c:	01840200 	orreq	r0, r4, r0, lsl #4
+     26c:	01800200 	orreq	r0, r0, r0, lsl #4
      270:	00000073 	andeq	r0, r0, r3, ror r0
      274:	00029203 	andeq	r9, r2, r3, lsl #4
      278:	65720d00 	ldrbvs	r0, [r2, #-3328]!	; 0xd00
-     27c:	84020067 	strhi	r0, [r2], #-103	; 0x67
+     27c:	80020067 	andhi	r0, r2, r7, rrx
      280:	00005a01 	andeq	r5, r0, r1, lsl #20
      284:	00470e00 	subeq	r0, r7, r0, lsl #28
-     288:	86020000 	strhi	r0, [r2], -r0
+     288:	82020000 	andhi	r0, r2, #0
      28c:	00007301 	andeq	r7, r0, r1, lsl #6
      290:	97150000 	ldrls	r0, [r5, -r0]
      294:	01000001 	tsteq	r0, r1

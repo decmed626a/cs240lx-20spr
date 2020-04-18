@@ -3,21 +3,13 @@
 
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 #include "cycle-util.h"
+//#include "interrupt_handlers.c"
 
 typedef void (*int_fp)(void);
 
 static volatile unsigned cnt = 0;
 
 // fake little "interrupt" handlers: useful just for measurement.
-void debug_int_0() { printk("in 0\n"); cnt++; }
-void debug_int_1() { printk("in 1\n"); cnt++; }
-void debug_int_2() { printk("in 2\n"); cnt++; }
-void debug_int_3() { printk("in 3\n"); cnt++; }
-void debug_int_4() { printk("in 4\n"); cnt++; }
-void debug_int_5() { printk("in 5\n"); cnt++; }
-void debug_int_6() { printk("in 6\n"); cnt++; }
-void debug_int_7() { printk("in 7\n"); cnt++; }
-
 void int_0() { cnt++; }
 void int_1() { cnt++; }
 void int_2() { cnt++; }
@@ -102,6 +94,12 @@ void notmain(void) {
     TIME_CYC_PRINT10("cost of dynamic int calling", dynamic_call_int() );
     demand(cnt == n*10, "cnt=%d, expected=%d\n", cnt, n*10);
 
+#if 0
+	cnt = 0;
+	void (*dynamic_call_int)(void) = (typeof(dynamic_call_int))code;
+    TIME_CYC_PRINT10("cost of dynamic int calling", dynamic_call_int() );
+    demand(cnt == n*10, "cnt=%d, expected=%d\n", cnt, n*10);
+#endif
     clean_reboot();
 }
 

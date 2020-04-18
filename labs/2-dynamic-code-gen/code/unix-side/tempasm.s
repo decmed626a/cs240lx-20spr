@@ -1,1 +1,1 @@
-pop {pc}
+bx lr
