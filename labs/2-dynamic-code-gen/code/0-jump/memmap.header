@@ -43,6 +43,7 @@ SECTIONS
 		BYTE(0x72);
 		BYTE(0x6C);
 		BYTE(0x64);
+		. = ALIGN(4);
 	}
 	.text :  { KEEP(*(.text.boot))  *(.text*) }
     .data :   { . = ALIGN(4); *(.data*)   . = ALIGN(4); } 

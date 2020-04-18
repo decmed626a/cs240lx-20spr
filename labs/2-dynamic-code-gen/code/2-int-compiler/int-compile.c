@@ -3,13 +3,14 @@
 
 #define NELEM(x) (sizeof(x) / sizeof((x)[0]))
 #include "cycle-util.h"
-//#include "interrupt_handlers.c"
+#include "interrupt_handlers.c"
 
 typedef void (*int_fp)(void);
 
-static volatile unsigned cnt = 0;
+//static volatile unsigned cnt = 0;
 
 // fake little "interrupt" handlers: useful just for measurement.
+#if 0
 void int_0() { cnt++; }
 void int_1() { cnt++; }
 void int_2() { cnt++; }
@@ -18,6 +19,7 @@ void int_4() { cnt++; }
 void int_5() { cnt++; }
 void int_6() { cnt++; }
 void int_7() { cnt++; }
+#endif 
 
 static uint32_t code [16] __attribute__((aligned(16)));
 static uint8_t m;

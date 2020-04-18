@@ -5,14 +5,13 @@ header.elf:     file format elf32-littlearm
 Disassembly of section .crt0_header:
 
 00008000 <.crt0_header>:
-    8000:	ea000004 	b	8018 <LINK_ADDR+0x18>
-    8004:	0000001b 	andeq	r0, r0, fp, lsl r0
+    8000:	ea000005 	b	801c <_start>
+    8004:	0000001c 	andeq	r0, r0, ip, lsl r0
     8008:	00008000 	andeq	r8, r0, r0
     800c:	000018d0 	ldrdeq	r1, [r0], -r0
     8010:	6c6c6568 	cfstr64vs	mvdx6, [ip], #-416	; 0xfffffe60
     8014:	6f77206f 	svcvs	0x0077206f
-    8018:	Address 0x0000000000008018 is out of bounds.
-
+    8018:	00646c72 	rsbeq	r6, r4, r2, ror ip
 
 Disassembly of section .text:
 
