@@ -81,7 +81,7 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 #endif 
 
 
-	for(int i = 0; i < 10000; i++) {
+	for(int i = 0; i < 3000; i++) {
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions].v = curr_read;
@@ -152,6 +152,13 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 			baseline_read = curr_read;
 			num_transitions++;
 		}
+
+		/*
+		if((num_transitions > n_max) || \
+		    (transition_buf[num_transitions].ncycles  > start + max_cycles)){
+			break;
+		}
+		*/
 	}
 
 	for(int a = 0; a < num_transitions; a++) {
