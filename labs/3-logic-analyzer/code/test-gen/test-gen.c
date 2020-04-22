@@ -28,53 +28,12 @@ static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 #include "../scope-constants.h"
 // set GPIO <pin> on.
 static inline void fast_gpio_set_on(unsigned pin) {
-    // implement this
-    // use gpio_set0
-    if (pin >= 32) {
-        return;
-    }
-    // Get current register value
-    volatile unsigned* gpio_reg = 0x0;
-    unsigned bitmask = 0x0;
-    
-    if (pin <= 31){
-        gpio_reg = GPSET0;
-        // TODO: why do we not want this statement?
-        //bitmask = get32(GPSET0);
-    } else {
-        gpio_reg = GPSET1;
-        //bitmask = get32(GPSET1);
-        // TODO: why do we not want this statement?
-    }
-    
-    // Calculate bitmask to preserve values
-    bitmask |= 1 << (pin % 32);
-    
-    put32(gpio_reg, bitmask);
+    *GPSET0 |= 1 << (pin);
 }
 
 // set GPIO <pin> off
 static inline void fast_gpio_set_off(unsigned pin) {
-    // implement this
-    // use gpio_clr0
-    if(pin >= 32) {
-        return;
-    }
-    volatile unsigned* gpio_reg = 0x0;
-    unsigned bitmask = 0x0;
-    
-    if (pin <= 31){
-        gpio_reg = GPCLR0;
-        //bitmask = get32(GPCLR0);
-    } else {
-        gpio_reg = GPCLR1;
-        //bitmask = get32(GPCLR1);
-    }
-    
-    // Calculate bitmask to preserve values
-    bitmask |= 1 << (pin % 32);
-    
-    put32(gpio_reg, bitmask);
+    *GPCLR0 |= 1 << (pin);
 }
 
 // set <pin> to <v> (v \in {0,1})
@@ -87,16 +46,15 @@ static inline void fast_gpio_write(unsigned pin, unsigned v) {
 }
 // send N samples at <ncycle> cycles each in a simple way.
 void test_gen(unsigned pin, unsigned N, unsigned ncycle) {
-	static int count = 0;
-	static int v = 0;
+	unsigned i = 1;
 	unsigned start = cycle_cnt_read();
-	unsigned first = start;
 
 	// Unroll to 10 iterations
 	// Hardcode set and clear
 	// Get rid of v
 	// Get rid of count
 	
+# if 0
 	while(count < N) {
 		unsigned sample = cycle_cnt_read();
 		if(sample - first >= ncycle) {
@@ -107,6 +65,30 @@ void test_gen(unsigned pin, unsigned N, unsigned ncycle) {
 			v ^= 1;
 		}
 	}
+#endif
+
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i)) {}
+	fast_gpio_set_off(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 1)) {}
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 2)) {}
+	fast_gpio_set_off(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 3)) {}
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 4)) {}
+	fast_gpio_set_off(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 5)) {}
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 6)) {}
+	fast_gpio_set_off(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 7)) {}
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 8)) {}
+	fast_gpio_set_off(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 9)) {}
+	fast_gpio_set_on(pin);
+	while(cycle_cnt_read() - start < ncycle * (i + 10)) {}
     unsigned end = cycle_cnt_read();
 
     // crude check how accurate we were ourselves.
