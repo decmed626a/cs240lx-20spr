@@ -31,7 +31,7 @@ typedef struct {
 
 // return the value of <pin>
 static inline int fast_gpio_read(unsigned pin) {
-    return (*GPLEV0 & (1 << (pin)));
+    return (*GPLEV0);
 }
 
 // compute the number of cycles per second
@@ -51,14 +51,15 @@ unsigned cycles_per_sec(unsigned s) {
 unsigned 
 scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	unsigned num_samples = 0;
-
-    log_ent_t temp[100];
-	unsigned baseline_read = 0;
-	unsigned first_read = (fast_gpio_read(pin) >> pin);
+	unsigned curr_read;
+	unsigned baseline_read;
+    log_ent_t temp[10];
+	
+	unsigned first_read = (fast_gpio_read(pin));
 	
 	// Just do one shift
 	// Loop unrolling isn't super helpful..
-	while(first_read == (baseline_read=fast_gpio_read(pin)>>pin)) {}
+	while(first_read == (baseline_read=*GPLEV0)) {}
 	unsigned start = cycle_cnt_read();
 
 	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
@@ -79,21 +80,28 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	}
 #endif 
 
-	for(int i = 0; i < 1000; i++) {
-		unsigned curr_read = fast_gpio_read(pin) >> pin; 
+	for(int i = 0; i < 10000; i++) {
+		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
 			temp[num_samples].v = curr_read;
-			temp[num_samples].ncycles = cycle_cnt_read() - (start);
+			temp[num_samples].ncycles = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_samples++;
 		}
 	}
 
-	for(int j = 0; j < num_samples; j++) {
+	for(int a = 0; a <= num_samples; a++) {
+		temp[a].v= (temp[a].v & 1<<pin) >> pin;
+		temp[a].ncycles = temp[a].ncycles - start;
+	}
+
+	for(int j = 0; j <= num_samples; j++) {
 		l[j].v = temp[j].v;
 		l[j].ncycles = temp[j + 1].ncycles - temp[j].ncycles;
 	}
 
+	printk("First read: %d\n", (first_read & 1<<pin)>>pin);
+	printk("Num samples: %d\n", num_samples);
 	return num_samples;
 }
 
