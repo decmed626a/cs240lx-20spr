@@ -56,11 +56,12 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
     log_ent_t transition_buf[11];
 	
 	unsigned first_read = (fast_gpio_read(pin));
-	
+
+	unsigned start;
 	// Just do one shift
 	// Loop unrolling isn't super helpful..
 	while(first_read == (baseline_read=*GPLEV0)) {}
-	unsigned start = cycle_cnt_read();
+	start = cycle_cnt_read();
 	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
 	// Enqueue items and then check at the end if we fail
 	// Have a hard loop in the center: to reduce number of checks
@@ -79,7 +80,71 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	}
 #endif 
 
-	for(int i = 0; i < 20000; i++) {
+
+	for(int i = 0; i < 10000; i++) {
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
+		curr_read = *GPLEV0; 
+		if(baseline_read != curr_read){
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			baseline_read = curr_read;
+			num_transitions++;
+		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions].v = curr_read;
