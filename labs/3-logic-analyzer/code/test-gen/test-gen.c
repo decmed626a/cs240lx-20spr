@@ -9,8 +9,19 @@
 void test_gen(unsigned pin, unsigned N, unsigned ncycle) {
     unsigned start = cycle_cnt_read();
 
-    unimplemented();
-
+	static int count = 0;
+	static int v = 0;
+	unsigned first = cycle_cnt_read();
+	while(count < N) {
+		unsigned sample = cycle_cnt_read();
+		if(sample - first >= ncycle) {
+			gpio_write(pin, 1-v);
+			first = sample;
+			count++;
+			v ^= 1;
+		}
+	}
+	
     unsigned end = cycle_cnt_read();
 
     // crude check how accurate we were ourselves.
