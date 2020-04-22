@@ -53,7 +53,7 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	unsigned num_transitions = 1;
 	unsigned curr_read;
 	unsigned baseline_read;
-    log_ent_t transition_buf[11];
+    unsigned transition_buf[11];
 	
 	unsigned first_read = (fast_gpio_read(pin));
 
@@ -62,6 +62,7 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	// Loop unrolling isn't super helpful..
 	while(first_read == (baseline_read=*GPLEV0)) {}
 	start = cycle_cnt_read();
+	unsigned cutoff = start + max_cycles;
 	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
 	// Enqueue items and then check at the end if we fail
 	// Have a hard loop in the center: to reduce number of checks
@@ -81,112 +82,77 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 #endif 
 
 
-	for(int i = 0; i < 3000; i++) {
+	for(int i = 0; i < 2000; i++) {
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions].v = curr_read;
-			transition_buf[num_transitions].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 
-		/*
 		if((num_transitions > n_max) || \
-		    (transition_buf[num_transitions].ncycles  > start + max_cycles)){
+		    (transition_buf[num_transitions] > cutoff)){
 			break;
 		}
-		*/
 	}
 
+	unsigned pp_read = 1-((first_read & 1<<pin) >> pin);
 	for(int a = 0; a < num_transitions; a++) {
 		if(a == 0) {
-			transition_buf[a].v = 1-((first_read & 1<<pin)>>pin);
-			transition_buf[a].ncycles = start; 
-		} else {
-			transition_buf[a].v= (transition_buf[a].v & 1<<pin) >> pin;
-		}
+			transition_buf[a] = start; 
+		} 
 	}
 
 
 	for(int j = 0; j < num_transitions; j++) {
-		l[j].v = transition_buf[j].v;
-		l[j].ncycles = transition_buf[j + 1].ncycles - transition_buf[j].ncycles;
+		
+		l[j].v = pp_read;
+		pp_read = 1-pp_read;
+		l[j].ncycles = transition_buf[j + 1] - transition_buf[j];
 	}
 
-	printk("First read: %d\n", (first_read & 1<<pin)>>pin);
-	printk("Num transitions: %d\n", num_transitions);
-	printk("TRANSITION TABLE\n");
-    for(int i = 0; i < num_transitions; i++) {
-        log_ent_t *e = &transition_buf[i];
-
-        unsigned ncyc = e->ncycles;
-
-        printk(" %x: val=%d, time=%d\n", i, e->v, ncyc);
-    }
-	printk("SAMPLE TABLE\n");
 	return num_transitions;
 }
 
