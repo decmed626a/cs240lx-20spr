@@ -50,10 +50,10 @@ unsigned cycles_per_sec(unsigned s) {
 // return value: the number of samples recorded.
 unsigned 
 scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
-	unsigned num_samples = 0;
+	unsigned num_samples = 1;
 	unsigned curr_read;
 	unsigned baseline_read;
-    log_ent_t temp[10];
+    log_ent_t temp[11];
 	
 	unsigned first_read = (fast_gpio_read(pin));
 	
@@ -61,7 +61,6 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	// Loop unrolling isn't super helpful..
 	while(first_read == (baseline_read=*GPLEV0)) {}
 	unsigned start = cycle_cnt_read();
-
 	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
 	// Enqueue items and then check at the end if we fail
 	// Have a hard loop in the center: to reduce number of checks
@@ -80,7 +79,7 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	}
 #endif 
 
-	for(int i = 0; i < 10000; i++) {
+	for(int i = 0; i < 20000; i++) {
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
 			temp[num_samples].v = curr_read;
@@ -90,12 +89,17 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 		}
 	}
 
-	for(int a = 0; a <= num_samples; a++) {
-		temp[a].v= (temp[a].v & 1<<pin) >> pin;
-		temp[a].ncycles = temp[a].ncycles - start;
+	for(int a = 0; a < num_samples; a++) {
+		if(a == 0) {
+			temp[a].v = 1-((first_read & 1<<pin)>>pin);
+			temp[a].ncycles = start; 
+		} else {
+			temp[a].v= (temp[a].v & 1<<pin) >> pin;
+		}
 	}
 
-	for(int j = 0; j <= num_samples; j++) {
+
+	for(int j = 0; j < num_samples; j++) {
 		l[j].v = temp[j].v;
 		l[j].ncycles = temp[j + 1].ncycles - temp[j].ncycles;
 	}
@@ -130,7 +134,7 @@ void notmain(void) {
     gpio_set_input(pin);
     cycle_cnt_init();
 
-#   define MAXSAMPLES 10
+#   define MAXSAMPLES 11
     log_ent_t log[MAXSAMPLES];
 
     unsigned n = scope(pin, log, MAXSAMPLES, cycles_per_sec(1));
