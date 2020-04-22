@@ -50,10 +50,10 @@ unsigned cycles_per_sec(unsigned s) {
 // return value: the number of samples recorded.
 unsigned 
 scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
-	unsigned num_samples = 1;
+	unsigned num_transitions = 1;
 	unsigned curr_read;
 	unsigned baseline_read;
-    log_ent_t temp[11];
+    log_ent_t transition_buf[11];
 	
 	unsigned first_read = (fast_gpio_read(pin));
 	
@@ -67,14 +67,14 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	// Replace get32 and put32 with volatile pointer accesses
 	// Replace array notation with pointer notation 
 #if 0
-	while(num_cycles <= max_cycles && num_samples <= n_max) {
+	while(num_cycles <= max_cycles && num_transitions <= n_max) {
 		unsigned curr_read = fast_gpio_read(pin) >> pin;
 		if(baseline_read != curr_read){
 			baseline_read = curr_read;
-			l[num_samples].v = curr_read;
-			l[num_samples].ncycles = cycle_cnt_read() - start;
+			l[num_transitions].v = curr_read;
+			l[num_transitions].ncycles = cycle_cnt_read() - start;
 			start = cycle_cnt_read();
-			num_samples++;
+			num_transitions++;
 		}
 	}
 #endif 
@@ -82,31 +82,40 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	for(int i = 0; i < 20000; i++) {
 		curr_read = *GPLEV0; 
 		if(baseline_read != curr_read){
-			temp[num_samples].v = curr_read;
-			temp[num_samples].ncycles = cycle_cnt_read();
+			transition_buf[num_transitions].v = curr_read;
+			transition_buf[num_transitions].ncycles = cycle_cnt_read();
 			baseline_read = curr_read;
-			num_samples++;
+			num_transitions++;
 		}
 	}
 
-	for(int a = 0; a < num_samples; a++) {
+	for(int a = 0; a < num_transitions; a++) {
 		if(a == 0) {
-			temp[a].v = 1-((first_read & 1<<pin)>>pin);
-			temp[a].ncycles = start; 
+			transition_buf[a].v = 1-((first_read & 1<<pin)>>pin);
+			transition_buf[a].ncycles = start; 
 		} else {
-			temp[a].v= (temp[a].v & 1<<pin) >> pin;
+			transition_buf[a].v= (transition_buf[a].v & 1<<pin) >> pin;
 		}
 	}
 
 
-	for(int j = 0; j < num_samples; j++) {
-		l[j].v = temp[j].v;
-		l[j].ncycles = temp[j + 1].ncycles - temp[j].ncycles;
+	for(int j = 0; j < num_transitions; j++) {
+		l[j].v = transition_buf[j].v;
+		l[j].ncycles = transition_buf[j + 1].ncycles - transition_buf[j].ncycles;
 	}
 
 	printk("First read: %d\n", (first_read & 1<<pin)>>pin);
-	printk("Num samples: %d\n", num_samples);
-	return num_samples;
+	printk("Num transitions: %d\n", num_transitions);
+	printk("TRANSITION TABLE\n");
+    for(int i = 0; i < num_transitions; i++) {
+        log_ent_t *e = &transition_buf[i];
+
+        unsigned ncyc = e->ncycles;
+
+        printk(" %x: val=%d, time=%d\n", i, e->v, ncyc);
+    }
+	printk("SAMPLE TABLE\n");
+	return num_transitions;
 }
 
 // dump out the log, calculating the error at each point,
@@ -134,7 +143,7 @@ void notmain(void) {
     gpio_set_input(pin);
     cycle_cnt_init();
 
-#   define MAXSAMPLES 11
+#   define MAXSAMPLES 10
     log_ent_t log[MAXSAMPLES];
 
     unsigned n = scope(pin, log, MAXSAMPLES, cycles_per_sec(1));
