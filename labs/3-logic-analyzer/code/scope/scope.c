@@ -31,10 +31,7 @@ typedef struct {
 
 // return the value of <pin>
 static inline int fast_gpio_read(unsigned pin) {
-    
-    unsigned v = get32(GPLEV0);
-    
-    return (v & (1 << (pin)));
+    return (*GPLEV0 & (1 << (pin)));
 }
 
 // compute the number of cycles per second
@@ -53,8 +50,9 @@ unsigned cycles_per_sec(unsigned s) {
 // return value: the number of samples recorded.
 unsigned 
 scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
-	int_fast32_t num_cycles = 0;
-	int_fast32_t num_samples = 0;
+	unsigned num_samples = 0;
+
+    log_ent_t temp[100];
 	unsigned baseline_read = 0;
 	unsigned first_read = (fast_gpio_read(pin) >> pin);
 	
@@ -68,6 +66,7 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	// Have a hard loop in the center: to reduce number of checks
 	// Replace get32 and put32 with volatile pointer accesses
 	// Replace array notation with pointer notation 
+#if 0
 	while(num_cycles <= max_cycles && num_samples <= n_max) {
 		unsigned curr_read = fast_gpio_read(pin) >> pin;
 		if(baseline_read != curr_read){
@@ -78,6 +77,23 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 			num_samples++;
 		}
 	}
+#endif 
+
+	for(int i = 0; i < 1000; i++) {
+		unsigned curr_read = fast_gpio_read(pin) >> pin; 
+		if(baseline_read != curr_read){
+			temp[num_samples].v = curr_read;
+			temp[num_samples].ncycles = cycle_cnt_read() - (start);
+			baseline_read = curr_read;
+			num_samples++;
+		}
+	}
+
+	for(int j = 0; j < num_samples; j++) {
+		l[j].v = temp[j].v;
+		l[j].ncycles = temp[j + 1].ncycles - temp[j].ncycles;
+	}
+
 	return num_samples;
 }
 
