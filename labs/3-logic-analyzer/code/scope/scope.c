@@ -37,123 +37,98 @@ static inline int fast_gpio_read(unsigned pin) {
 // compute the number of cycles per second
 unsigned cycles_per_sec(unsigned s) {
     demand(s < 2, will overflow);
-	unsigned first = cycle_cnt_read();
-	delay_ms(1000 * s);
-	unsigned last = cycle_cnt_read();
-	return last-first;
+    unsigned first = cycle_cnt_read();
+    delay_ms(1000 * s);
+    unsigned last = cycle_cnt_read();
+    return last-first;
 }
 
 // monitor <pin>, recording any transitions until either:
-//  1. we have run for about <max_cycles>.  
+//  1. we have run for about <max_cycles>.
 //  2. we have recorded <n_max> samples.
 //
 // return value: the number of samples recorded.
-unsigned 
+unsigned
 scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
-	unsigned num_transitions = 1;
-	unsigned curr_read;
-	unsigned baseline_read;
+    unsigned num_transitions = 1;
+    unsigned curr_read;
+    unsigned baseline_read;
     unsigned transition_buf[11];
-	
-	unsigned first_read = (fast_gpio_read(pin));
+    
+    unsigned first_read = (fast_gpio_read(pin));
 
-	unsigned start;
-	// Just do one shift
-	// Loop unrolling isn't super helpful..
-	while(first_read == (baseline_read=*GPLEV0)) {}
-	start = cycle_cnt_read();
-	unsigned cutoff = start + max_cycles;
-	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
-	// Enqueue items and then check at the end if we fail
-	// Have a hard loop in the center: to reduce number of checks
-	// Replace get32 and put32 with volatile pointer accesses
-	// Replace array notation with pointer notation 
+    // Just do one shift
+    // Loop unrolling isn't super helpful..
+    while(first_read == (baseline_read=*GPLEV0)) {}
+    unsigned start = cycle_cnt_read();
+    unsigned cutoff = start + max_cycles;
+    // Rare that we run out of max cycles and num samples; don't care if we overshoot :)
+    // Enqueue items and then check at the end if we fail
+    // Have a hard loop in the center: to reduce number of checks
+    // Replace get32 and put32 with volatile pointer accesses
+    // Replace array notation with pointer notation
 #if 0
-	while(num_cycles <= max_cycles && num_transitions <= n_max) {
-		unsigned curr_read = fast_gpio_read(pin) >> pin;
-		if(baseline_read != curr_read){
-			baseline_read = curr_read;
-			l[num_transitions].v = curr_read;
-			l[num_transitions].ncycles = cycle_cnt_read() - start;
-			start = cycle_cnt_read();
-			num_transitions++;
-		}
-	}
-#endif 
+    while(num_cycles <= max_cycles && num_transitions <= n_max) {
+        unsigned curr_read = fast_gpio_read(pin) >> pin;
+        if(baseline_read != curr_read){
+            baseline_read = curr_read;
+            l[num_transitions].v = curr_read;
+            l[num_transitions].ncycles = cycle_cnt_read() - start;
+            start = cycle_cnt_read();
+            num_transitions++;
+        }
+    }
+#endif
 
+sample:
+    for(int i = 0; i < 2048; i++) {
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+        if(baseline_read != *GPLEV0){
+            break;
+        }
+    }
 
-	for(int i = 0; i < 2000; i++) {
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
-		curr_read = *GPLEV0; 
-		if(baseline_read != curr_read){
-			transition_buf[num_transitions] = cycle_cnt_read();
-			baseline_read = curr_read;
-			num_transitions++;
-		}
+    baseline_read = *GPLEV0;
+    transition_buf[num_transitions++] = cycle_cnt_read();
+    
+    if((num_transitions > n_max)) {
+        goto post_process;
+    }
+    goto sample;
+    
 
-		if((num_transitions > n_max) || \
-		    (transition_buf[num_transitions] > cutoff)){
-			break;
-		}
-	}
+post_process:
+    transition_buf[0] = start;
 
-	unsigned pp_read = 1-((first_read & 1<<pin) >> pin);
-	for(int a = 0; a < num_transitions; a++) {
-		if(a == 0) {
-			transition_buf[a] = start; 
-		} 
-	}
+    unsigned pp_read = 1-((first_read & 1<<pin) >> pin);
+    for(int j = 0; j < num_transitions; j++) {
+        
+        l[j].v = pp_read;
+        pp_read = 1-pp_read;
+        l[j].ncycles = transition_buf[j + 1] - transition_buf[j];
+    }
 
-
-	for(int j = 0; j < num_transitions; j++) {
-		
-		l[j].v = pp_read;
-		pp_read = 1-pp_read;
-		l[j].ncycles = transition_buf[j + 1] - transition_buf[j];
-	}
-
-	return num_transitions;
+    return num_transitions;
 }
 
 // dump out the log, calculating the error at each point,
@@ -177,11 +152,11 @@ void dump_samples(log_ent_t *l, unsigned n, unsigned period) {
 
 void notmain(void) {
     int pin = 21;
-	enable_cache();
+    enable_cache();
     gpio_set_input(pin);
     cycle_cnt_init();
 
-#   define MAXSAMPLES 10
+#   define MAXSAMPLES 8
     log_ent_t log[MAXSAMPLES];
 
     unsigned n = scope(pin, log, MAXSAMPLES, cycles_per_sec(1));
