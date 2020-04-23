@@ -55,12 +55,12 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 	unsigned baseline_read;
     unsigned transition_buf[11];
 	
-	unsigned first_read = (fast_gpio_read(pin));
+	unsigned first_read = (*GPLEV0 & 0x200000);
 
 	unsigned start;
 	// Just do one shift
 	// Loop unrolling isn't super helpful..
-	while(first_read == (baseline_read=*GPLEV0)) {}
+	while(first_read == (baseline_read=(*GPLEV0 & 0x200000))) {}
 	start = cycle_cnt_read();
 	unsigned cutoff = start + max_cycles;
 	// Rare that we run out of max cycles and num samples; don't care if we overshoot :) 
@@ -83,57 +83,56 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
 
 
 	for(int i = 0; i < 2000; i++) {
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
-		curr_read = *GPLEV0; 
+		curr_read = *GPLEV0 & 0x200000; 
 		if(baseline_read != curr_read){
 			transition_buf[num_transitions] = cycle_cnt_read();
 			baseline_read = curr_read;
 			num_transitions++;
 		}
 
-		if((num_transitions > n_max) || \
-		    (transition_buf[num_transitions] > cutoff)){
+		if(num_transitions > n_max) {
 			break;
 		}
 	}
