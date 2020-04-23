@@ -54,12 +54,12 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
     unsigned curr_read;
     unsigned baseline_read;
     unsigned transition_buf[11];
-    
-    unsigned first_read = (fast_gpio_read(pin));
+	unsigned temp_time;    
+    unsigned first_read = (*GPLEV0 & 0x200000);
 
     // Just do one shift
     // Loop unrolling isn't super helpful..
-    while(first_read == (baseline_read=*GPLEV0)) {}
+    while(first_read == (baseline_read=(*GPLEV0 & 0x200000))) {}
     unsigned start = cycle_cnt_read();
     unsigned cutoff = start + max_cycles;
     // Rare that we run out of max cycles and num samples; don't care if we overshoot :)
@@ -80,36 +80,45 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
     }
 #endif
 
+
 sample:
     for(int i = 0; i < 2048; i++) {
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
-        if(baseline_read != *GPLEV0){
+        temp_time = cycle_cnt_read();
+		if(baseline_read != (curr_read = (*GPLEV0 & 0x200000))){
             break;
         }
     }
 
-    baseline_read = *GPLEV0;
-    transition_buf[num_transitions++] = cycle_cnt_read();
+	baseline_read = curr_read;
+    transition_buf[num_transitions++] = temp_time;
     
     if((num_transitions > n_max)) {
         goto post_process;
