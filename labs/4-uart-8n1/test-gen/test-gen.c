@@ -45,6 +45,69 @@ static inline void fast_gpio_write(unsigned pin, unsigned v) {
     else
         fast_gpio_set_off(pin);
 }
+
+// return the value of <pin>
+static inline int fast_gpio_read(unsigned pin) {
+    return (*GPLEV0);
+}
+
+// compute the number of cycles per second
+unsigned cycles_per_sec(unsigned s) {
+    demand(s < 2, will overflow);
+    unsigned first = cycle_cnt_read();
+    delay_ms(1000 * s);
+    unsigned last = cycle_cnt_read();
+    return last-first;
+}
+
+unsigned
+scope(unsigned pin) {
+
+
+    int output = 0;
+    int bit7 = 0;
+    int bit6 = 0;
+    int bit5 = 0;
+    int bit4 = 0;
+    int bit3 = 0;
+    int bit2 = 0;
+    int bit1 = 0;
+    int bit0 = 0;
+    
+    unsigned i = 1;
+    
+    while (((*GPLEV0 & 0x100000)>> 20) > 0) {
+        ;
+    }
+    unsigned start  = cycle_cnt_read();
+    while(cycle_cnt_read() - start < 9114 * (i)) {}
+    bit7 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
+    bit6 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 2)) {}
+    bit5 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 3)) {}
+    bit4 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 4)) {}
+    bit3 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 5)) {}
+    bit2 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 6)) {}
+    bit1 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
+    bit0 = (*GPLEV0 & 0x100000) >> 20;
+    while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
+    output = (bit7 & 1) | \
+             (bit6 & 1) << 1 | \
+             (bit5 & 1) << 2 | \
+             (bit4 & 1) << 3 | \
+             (bit3 & 1) << 4 | \
+             (bit2 & 1) << 5 | \
+             (bit1 & 1) << 6 | \
+             (bit0 & 1) << 7;
+    return output;
+}
+
 // send N samples at <ncycle> cycles each in a simple way.
 void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	unsigned i = 1;
@@ -90,24 +153,64 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	while(cycle_cnt_read() - start < ncycle * (i + 9)) {}
     unsigned end = cycle_cnt_read();
 
-    // crude check how accurate we were ourselves.
-    printk("expected %d cycles, have %d\n", ncycle*10, end-start);
+    //printk("expected %d cycles, have %d\n", ncycle*10, end-start);
+}
+
+static void server(unsigned tx, unsigned rx, unsigned n) {
+	
+	printk("am a server, sending 0\n");
+	unsigned curr_value = 0;
+    unsigned expected = 1;
+	unsigned temp = 0;
+	test_gen(tx, curr_value, 6076); 
+	curr_value++;
+    while(curr_value < n) {
+        // oh: have to wait.
+        if(expected == (temp = scope(rx))) {
+			printk("Got %d\n", temp);
+        	curr_value = expected + 1;
+			expected += 2;
+        	printk("Sending %d\n", curr_value);
+			test_gen(tx, curr_value, 6076);
+    	}
+	}
+	printk ("client done: ended with %d\n", curr_value); 
+}
+
+static void client(unsigned tx, unsigned rx, unsigned n) {
+    printk("am a client\n");
+
+    // we received 1 from server: next should be 0.
+    unsigned reply = 0;
+	unsigned expected = 0;
+    for(unsigned i = 0; i < n; i++) {
+        //printk("%d: going to write: %d\n",i, v);
+        if(expected == scope(rx)) {
+			reply = expected + 1;
+			expected += 2;
+			test_gen(tx, reply, 6076); 
+		}
+    }
+	printk ("client done: ended with %d\n", reply); 
 }
 
 void notmain(void) {
-    int pin = 21;
+    int rx = 20;
+	int tx = 21;
+    gpio_set_output(tx);
+    gpio_set_input(rx);
 	enable_cache();
-    gpio_set_output(pin);
-	fast_gpio_set_on(pin);
-    
+	fast_gpio_set_on(tx);
     delay_ms(7000);
-    
     cycle_cnt_init();
 
-	unsigned data = 0x69;
+    if(!gpio_read(rx))
+        server(tx, rx, 254);
+    else
+        client(tx, rx, 254);
 
     // keep it seperate so easy to look at assembly.
-    test_gen(pin, data, 6076);
+	
 
     clean_reboot();
 }

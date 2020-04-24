@@ -24,6 +24,25 @@ static volatile unsigned *GPCLR1 = (void*) 0x2020002C;
 static volatile unsigned *GPLEV0 = (void*) 0x20200034;
 static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 
+// set GPIO <pin> on.
+static inline void fast_gpio_set_on(unsigned pin) {
+    *GPSET0 |= 1 << (pin);
+}
+
+// set GPIO <pin> off
+static inline void fast_gpio_set_off(unsigned pin) {
+    *GPCLR0 |= 1 << (pin);
+}
+
+// set <pin> to <v> (v \in {0,1})
+static inline void fast_gpio_write(unsigned pin, unsigned v) {
+    
+    if(v)
+        fast_gpio_set_on(pin);
+    else
+        fast_gpio_set_off(pin);
+}
+
 // dumb log.  use your own if you like!
 typedef struct {
     unsigned v,ncycles;
@@ -49,7 +68,7 @@ unsigned cycles_per_sec(unsigned s) {
 //
 // return value: the number of samples recorded.
 unsigned 
-scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
+scope(unsigned pin) {
 
 
     int output = 0;
@@ -96,37 +115,107 @@ scope(unsigned pin, log_ent_t *l, unsigned n_max, unsigned max_cycles) {
     return output;
 }
 
-// dump out the log, calculating the error at each point,
-// and the absolute cumulative error.
-void dump_samples(log_ent_t *l, unsigned n, unsigned period) {
-    unsigned tot = 0, tot_err = 0;
+// send N samples at <ncycle> cycles each in a simple way.
+void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
+    unsigned i = 1;
+    unsigned start = cycle_cnt_read();
 
-    for(int i = 0; i < n-1; i++) {
-        log_ent_t *e = &l[i];
-
-        unsigned ncyc = e->ncycles;
-        tot += ncyc;
-
-        unsigned exp = period * (i+1);
-        unsigned err = tot > exp ? tot - exp : exp - tot;
-        tot_err += err;
-
-        printk(" %d: val=%d, time=%d, tot=%d: exp=%d (err=%d, toterr=%d)\n", i, e->v, ncyc, tot, exp, err, tot_err);
+    // Unroll to 10 iterations
+    // Hardcode set and clear
+    // Get rid of v
+    // Get rid of count
+    
+# if 0
+    while(count < N) {
+        unsigned sample = cycle_cnt_read();
+        if(sample - first >= ncycle) {
+            fast_gpio_write(pin, 1-v);
+            first = sample; // This error is additive :( Just use start instead
+            // whiel cycle_cnt_read - start < ncycles * iteration
+            count++;
+            v ^= 1;
+        }
     }
+#endif
+
+    fast_gpio_write(pin, 0);
+    while(cycle_cnt_read() - start < ncycle * (i)) {}
+    fast_gpio_write(pin, data & 1);
+    while(cycle_cnt_read() - start < ncycle * (i + 1)) {}
+    fast_gpio_write(pin, data & 2);
+    while(cycle_cnt_read() - start < ncycle * (i + 2)) {}
+    fast_gpio_write(pin, data & 4);
+    while(cycle_cnt_read() - start < ncycle * (i + 3)) {}
+    fast_gpio_write(pin, data & 8);
+    while(cycle_cnt_read() - start < ncycle * (i + 4)) {}
+    fast_gpio_write(pin, data & 16);
+    while(cycle_cnt_read() - start < ncycle * (i + 5)) {}
+    fast_gpio_write(pin, data & 32);
+    while(cycle_cnt_read() - start < ncycle * (i + 6)) {}
+    fast_gpio_write(pin, data & 64);
+    while(cycle_cnt_read() - start < ncycle * (i + 7)) {}
+    fast_gpio_write(pin, data & 128);
+    while(cycle_cnt_read() - start < ncycle * (i + 8)) {}
+    fast_gpio_write(pin, 1);
+    while(cycle_cnt_read() - start < ncycle * (i + 9)) {}
+    unsigned end = cycle_cnt_read();
+
+    //printk("expected %d cycles, have %d\n", ncycle*10, end-start);
+}
+
+static void server(unsigned tx, unsigned rx, unsigned n) {
+    
+    printk("am a server, sending 0\n");
+    unsigned curr_value = 0;
+    unsigned expected = 1;
+
+    test_gen(tx, curr_value, 6076);
+    curr_value++;
+    for(unsigned i = 0; i < n; i++) {
+        // oh: have to wait.
+        if(expected == scope(rx)) {
+            curr_value = expected + 1;
+            expected += 2;
+            test_gen(tx, curr_value, 6076);
+    	}
+	}
+	printk("server done: ended with %d\n", curr_value);
+}
+
+static void client(unsigned tx, unsigned rx, unsigned n) {
+    printk("am a client\n");
+	printk("waiting for 0\n");
+
+    // we received 1 from server: next should be 0.
+    unsigned reply = 0;
+    unsigned expected = 0;
+	unsigned temp = 0;
+    while(reply < n) {
+        //printk("%d: going to write: %d\n",i, v);
+        if(expected == (temp = scope(rx))) {
+			printk("Got %d\n", temp); 
+            reply = expected + 1;
+            expected += 2;
+			fast_gpio_set_on(tx);
+			printk("Sending %d\n", reply); 
+            test_gen(tx, reply, 6076);
+        }
+    }
+	printk("client done: ended with %d\n", reply-1);
 }
 
 void notmain(void) {
-    int pin = 20;
-	enable_cache();
-    gpio_set_input(pin);
+    int rx = 20;
+    int tx = 21;
+    gpio_set_output(tx);
+    gpio_set_input(rx);
+    enable_cache();
     cycle_cnt_init();
 
-#   define MAXSAMPLES 10
-    log_ent_t log[MAXSAMPLES];
-
-    unsigned n = scope(pin, log, MAXSAMPLES, cycles_per_sec(1));
-
-    // <CYCLE_PER_FLIP> is in ../scope-constants.h
-    printk("UART got: %x\n", n);
+    if(!gpio_read(rx))
+        server(tx, rx, 254);
+    else
+        client(tx, rx, 254);
+    
     clean_reboot();
 }
