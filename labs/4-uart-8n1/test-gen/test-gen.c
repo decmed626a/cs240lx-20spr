@@ -3,6 +3,8 @@
 #include "cs140e-src/cycle-count.h"
 #include "cs140e-src/cycle-util.h"
 
+#define DELAY 50
+
 // see broadcomm documents for magic addresses.
 #define GPIO_BASE 0x20200000
 static volatile unsigned *gpio_fsel0 = (void*)(GPIO_BASE + 0x00);
@@ -60,7 +62,7 @@ unsigned cycles_per_sec(unsigned s) {
     return last-first;
 }
 
-unsigned
+uint8_t
 scope(unsigned pin) {
 
 
@@ -106,6 +108,19 @@ scope(unsigned pin) {
              (bit1 & 1) << 6 | \
              (bit0 & 1) << 7;
     return output;
+}
+
+unsigned fuse_scope (unsigned pin) {
+    unsigned fusion = 0;
+    fusion |= scope(pin);
+	// printk("Have %d\n", fusion);
+    fusion |= scope(pin) << 8;
+    // printk("Have %d\n", fusion);
+    fusion |= scope(pin) << 16;
+    // printk("Have %d\n", fusion);
+    fusion |= scope(pin) << 24;
+    // printk("Have %d\n", fusion);
+    return fusion;
 }
 
 // send N samples at <ncycle> cycles each in a simple way.
@@ -162,17 +177,38 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 	unsigned curr_value = 0;
     unsigned expected = 1;
 	unsigned temp = 0;
-	test_gen(tx, curr_value, 6076); 
+    //printk("Sending %d\n", (curr_value & 0xFF000000) >> 24);
+    delay_us(DELAY);
+	test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+    //printk("Sending %d\n", (curr_value & 0x00FF0000) >> 16);
+    delay_us(DELAY);
+    test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+    //printk("Sending %d\n", (curr_value & 0x0000FF00) >> 8);
+    delay_us(DELAY);
+    test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+    //printk("Sending %d\n", (curr_value & 0x000000FF));
+    delay_us(DELAY);
+    test_gen(tx, (curr_value & 0x000000FF), 6076);
 	curr_value++;
     while(curr_value < n) {
         // oh: have to wait.
-        if(expected == (temp = scope(rx))) {
-			printk("Got %d\n", temp);
+        if(expected == (temp = fuse_scope(rx))) {
         	curr_value = expected + 1;
 			expected += 2;
-        	printk("Sending %d\n", curr_value);
-			test_gen(tx, curr_value, 6076);
+        	//printk("Sending %d\n", (curr_value & 0xFF000000) >> 24);
+    		delay_us(DELAY);
+			test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076); 
+			//printk("Sending %d\n", (curr_value & 0x00FF0000) >> 16);
+			delay_us(DELAY);
+			test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076); 
+        	//printk("Sending %d\n", (curr_value & 0x0000FF00) >> 8);
+			delay_us(DELAY);
+			test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076); 
+        	//printk("Sending %d\n", (curr_value & 0x000000FF));
+			delay_us(DELAY);
+			test_gen(tx, (curr_value & 0x000000FF), 6076); 
     	}
+		printk("Got %d\n", temp);
 	}
 	printk ("client done: ended with %d\n", curr_value); 
 }

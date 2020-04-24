@@ -3,6 +3,8 @@
 #include "cs140e-src/cycle-count.h"
 #include "../scope-constants.h"
 
+#define DELAY 50
+
 #define GPIO_BASE 0x20200000
 static volatile unsigned *gpio_fsel0 = (void*)(GPIO_BASE + 0x00);
 static volatile unsigned *gpio_set0  = (void*)(GPIO_BASE + 0x1C);
@@ -67,7 +69,7 @@ unsigned cycles_per_sec(unsigned s) {
 //  2. we have recorded <n_max> samples.
 //
 // return value: the number of samples recorded.
-unsigned 
+uint8_t
 scope(unsigned pin) {
 
 
@@ -114,6 +116,20 @@ scope(unsigned pin) {
              (bit0 & 1) << 7;
     return output;
 }
+
+unsigned fuse_scope (unsigned pin) {
+    unsigned fusion = 0;
+    fusion |= scope(pin);
+	//printk("Have %d\n", fusion);
+	fusion |= scope(pin) << 8;
+    //printk("Have %d\n", fusion);
+    fusion |= scope(pin) << 16;
+    //printk("Have %d\n", fusion);
+    fusion |= scope(pin) << 24;
+	//printk("Have %d\n", fusion);
+    return fusion;
+}
+
 
 // send N samples at <ncycle> cycles each in a simple way.
 void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
@@ -192,13 +208,23 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 	unsigned temp = 0;
     while(reply < n) {
         //printk("%d: going to write: %d\n",i, v);
-        if(expected == (temp = scope(rx))) {
+        if(expected == (temp = fuse_scope(rx))) {
 			printk("Got %d\n", temp); 
             reply = expected + 1;
             expected += 2;
 			fast_gpio_set_on(tx);
-			printk("Sending %d\n", reply); 
-            test_gen(tx, reply, 6076);
+            //printk("Sending %d\n", (reply & 0xFF000000) >> 24);
+   			delay_us(DELAY);
+			test_gen(tx, (reply & 0xFF000000) >> 24, 6076);
+            //printk("Sending %d\n", (reply & 0x00FF0000) >> 16);
+   			delay_us(DELAY);
+            test_gen(tx, (reply & 0x00FF0000) >> 16, 6076);
+            //printk("Sending %d\n", (reply & 0x0000FF00) >> 8);
+   			delay_us(DELAY);
+            test_gen(tx, (reply & 0x0000FF00) >> 8, 6076);
+            //printk("Sending %d\n", (reply & 0x000000FF));
+   			delay_us(DELAY);
+            test_gen(tx, (reply & 0x000000FF), 6076);
         }
     }
 	printk("client done: ended with %d\n", reply-1);
