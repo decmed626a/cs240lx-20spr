@@ -163,28 +163,8 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
     //printk("expected %d cycles, have %d\n", ncycle*10, end-start);
 }
 
-static void server(unsigned tx, unsigned rx, unsigned n) {
-    
-    printk("am a server, sending 0\n");
-    unsigned curr_value = 0;
-    unsigned expected = 1;
-
-    test_gen(tx, curr_value, 6076);
-    curr_value++;
-    for(unsigned i = 0; i < n; i++) {
-        // oh: have to wait.
-        if(expected == scope(rx)) {
-            curr_value = expected + 1;
-            expected += 2;
-            test_gen(tx, curr_value, 6076);
-    	}
-	}
-	printk("server done: ended with %d\n", curr_value);
-}
-
 static void client(unsigned tx, unsigned rx, unsigned n) {
-    printk("am a client\n");
-	printk("waiting for 0\n");
+    printk("am a client, waiting 0 \n");
 
     // we received 1 from server: next should be 0.
     unsigned reply = 0;
@@ -196,10 +176,9 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 			//printk("Got %d\n", temp); 
             reply = expected + 1;
             expected += 2;
-			fast_gpio_set_on(tx);
-			delay_ms(1);
 			//printk("Sending %d\n", reply); 
-            test_gen(tx, reply, 6076);
+			delay_ms(1);
+			test_gen(tx, reply, 6076);
         }
     }
 	printk("client done: ended with %d\n", reply-1);
@@ -211,12 +190,10 @@ void notmain(void) {
     gpio_set_output(tx);
     gpio_set_input(rx);
     enable_cache();
-    cycle_cnt_init();
+    fast_gpio_set_on(tx);
+	cycle_cnt_init();
 
-    if(!gpio_read(rx))
-        server(tx, rx, 254);
-    else
-        client(tx, rx, 254);
-    
+    client(tx, rx, 254);
+	
     clean_reboot();
 }

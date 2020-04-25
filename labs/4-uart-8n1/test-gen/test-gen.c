@@ -178,23 +178,6 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 	printk ("client done: ended with %d\n", curr_value); 
 }
 
-static void client(unsigned tx, unsigned rx, unsigned n) {
-    printk("am a client\n");
-
-    // we received 1 from server: next should be 0.
-    unsigned reply = 0;
-	unsigned expected = 0;
-    for(unsigned i = 0; i < n; i++) {
-        //printk("%d: going to write: %d\n",i, v);
-        if(expected == scope(rx)) {
-			reply = expected + 1;
-			expected += 2;
-			test_gen(tx, reply, 6076); 
-		}
-    }
-	printk ("client done: ended with %d\n", reply); 
-}
-
 void notmain(void) {
     int rx = 20;
 	int tx = 21;
@@ -205,10 +188,7 @@ void notmain(void) {
     delay_ms(7000);
     cycle_cnt_init();
 
-    if(!gpio_read(rx))
-        server(tx, rx, 254);
-    else
-        client(tx, rx, 254);
+    server(tx, rx, 254);
 
     // keep it seperate so easy to look at assembly.
 	
