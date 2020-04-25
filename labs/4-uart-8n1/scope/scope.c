@@ -214,16 +214,12 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
             expected += 2;
 			fast_gpio_set_on(tx);
             //printk("Sending %d\n", (reply & 0xFF000000) >> 24);
-   			delay_us(DELAY);
 			test_gen(tx, (reply & 0xFF000000) >> 24, 6076);
             //printk("Sending %d\n", (reply & 0x00FF0000) >> 16);
-   			delay_us(DELAY);
             test_gen(tx, (reply & 0x00FF0000) >> 16, 6076);
             //printk("Sending %d\n", (reply & 0x0000FF00) >> 8);
-   			delay_us(DELAY);
             test_gen(tx, (reply & 0x0000FF00) >> 8, 6076);
             //printk("Sending %d\n", (reply & 0x000000FF));
-   			delay_us(DELAY);
             test_gen(tx, (reply & 0x000000FF), 6076);
         }
     }

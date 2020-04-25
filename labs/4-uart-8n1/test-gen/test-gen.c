@@ -114,11 +114,11 @@ unsigned fuse_scope (unsigned pin) {
     unsigned fusion = 0;
     fusion |= scope(pin);
 	// printk("Have %d\n", fusion);
-    fusion |= scope(pin) << 8;
+	fusion |= scope(pin) << 8;
     // printk("Have %d\n", fusion);
-    fusion |= scope(pin) << 16;
+	fusion |= scope(pin) << 16;
     // printk("Have %d\n", fusion);
-    fusion |= scope(pin) << 24;
+	fusion |= scope(pin) << 24;
     // printk("Have %d\n", fusion);
     return fusion;
 }
@@ -178,16 +178,12 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
     unsigned expected = 1;
 	unsigned temp = 0;
     //printk("Sending %d\n", (curr_value & 0xFF000000) >> 24);
-    delay_us(DELAY);
 	test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
     //printk("Sending %d\n", (curr_value & 0x00FF0000) >> 16);
-    delay_us(DELAY);
     test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
     //printk("Sending %d\n", (curr_value & 0x0000FF00) >> 8);
-    delay_us(DELAY);
     test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
     //printk("Sending %d\n", (curr_value & 0x000000FF));
-    delay_us(DELAY);
     test_gen(tx, (curr_value & 0x000000FF), 6076);
 	curr_value++;
     while(curr_value < n) {
@@ -196,16 +192,12 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
         	curr_value = expected + 1;
 			expected += 2;
         	//printk("Sending %d\n", (curr_value & 0xFF000000) >> 24);
-    		delay_us(DELAY);
 			test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076); 
 			//printk("Sending %d\n", (curr_value & 0x00FF0000) >> 16);
-			delay_us(DELAY);
 			test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076); 
         	//printk("Sending %d\n", (curr_value & 0x0000FF00) >> 8);
-			delay_us(DELAY);
 			test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076); 
         	//printk("Sending %d\n", (curr_value & 0x000000FF));
-			delay_us(DELAY);
 			test_gen(tx, (curr_value & 0x000000FF), 6076); 
     	}
 		printk("Got %d\n", temp);
