@@ -193,11 +193,12 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
     while(reply < n) {
         //printk("%d: going to write: %d\n",i, v);
         if(expected == (temp = scope(rx))) {
-			printk("Got %d\n", temp); 
+			//printk("Got %d\n", temp); 
             reply = expected + 1;
             expected += 2;
 			fast_gpio_set_on(tx);
-			printk("Sending %d\n", reply); 
+			delay_ms(1);
+			//printk("Sending %d\n", reply); 
             test_gen(tx, reply, 6076);
         }
     }

@@ -167,10 +167,11 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
     while(curr_value < n) {
         // oh: have to wait.
         if(expected == (temp = scope(rx))) {
-			printk("Got %d\n", temp);
+			//printk("Got %d\n", temp);
         	curr_value = expected + 1;
 			expected += 2;
-        	printk("Sending %d\n", curr_value);
+			//printk("Sending %d\n", curr_value);
+			delay_ms(1);
 			test_gen(tx, curr_value, 6076);
     	}
 	}
