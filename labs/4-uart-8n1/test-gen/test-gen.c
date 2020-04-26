@@ -152,15 +152,16 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
        	temp |= scope(rx) << 16; 
        	temp |= scope(rx) << 8; 
        	temp |= scope(rx) << 0; 
-		//printk("RX: %d\n", temp);
+		// printk("RX: %d\n", temp);
 		if(temp != curr_value) {
 			printk("Mismatch, got %d but expected %d\n",
 					temp, curr_value);
 			return;
     	}
 		curr_value++;
+		temp = 0;
 	}
-	printk ("client done: ended with %d\n", temp); 
+	printk ("client done: ended with %d\n", --curr_value); 
 }
 
 void notmain(void) {
@@ -171,7 +172,7 @@ void notmain(void) {
 	enable_cache();
     cycle_cnt_init();
 
-    server(tx, rx, 255);
+    server(tx, rx, 4096);
 
     // keep it seperate so easy to look at assembly.
 	

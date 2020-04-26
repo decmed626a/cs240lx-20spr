@@ -140,7 +140,7 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 	fast_gpio_set_on(tx);
     // we received 1 from server: next should be 0.
 	unsigned curr_value = 0;
-	for(int i = 0; i <= 10; i++) {
+	for(int i = 0; i <= 4096; i++) {
 		curr_value |= scope(rx) << 24;
 		curr_value |= scope(rx) << 16;
 		curr_value |= scope(rx) << 8;
@@ -154,6 +154,7 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
 		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
 		//printk("TX4: %d\n", curr_value & 0x000000FF);
+		curr_value = 0;
     }
 }
 
@@ -165,7 +166,7 @@ void notmain(void) {
     enable_cache();
 	cycle_cnt_init();
 
-    client(tx, rx, 255);
+    client(tx, rx, 4096);
 	
     clean_reboot();
 }
