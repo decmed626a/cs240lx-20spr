@@ -108,7 +108,11 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
     unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-    fast_gpio_write(pin, 0);
+	while (((*GPLEV0 & 0x200000) >> 21) == 0) {
+		;
+	}
+
+    fast_gpio_set_off(pin);
     while(cycle_cnt_read() - start < 6076 * (i)) {}
     fast_gpio_write(pin, data & 128);
     while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
@@ -126,7 +130,7 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
     while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
     fast_gpio_write(pin, data & 1);
     while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
-    fast_gpio_write(pin, 1);
+    fast_gpio_set_on(pin);
     while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
 
 }
@@ -136,9 +140,20 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 	fast_gpio_set_on(tx);
     // we received 1 from server: next should be 0.
 	unsigned curr_value = 0;
-	for(int i = 0; i <= 255; i++) {
-		curr_value = scope(rx);
-		test_gen(tx, curr_value, 6076);
+	for(int i = 0; i <= 10; i++) {
+		curr_value |= scope(rx) << 24;
+		curr_value |= scope(rx) << 16;
+		curr_value |= scope(rx) << 8;
+		curr_value |= scope(rx) << 0;
+		//printk("RX: %d\n", curr_value);
+		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+		//printk("TX1: %d\n", curr_value & 0xFF000000);
+		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+		//printk("TX2: %d\n", curr_value & 0x00FF0000);
+		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+		//printk("TX3: %d\n", curr_value & 0x0000FF00);
+		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
+		//printk("TX4: %d\n", curr_value & 0x000000FF);
     }
 }
 

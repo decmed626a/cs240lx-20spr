@@ -106,7 +106,11 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-	fast_gpio_write(pin, 0);
+    while (((*GPLEV0 & 0x200000) >> 21) == 0) {
+        ;
+    }
+
+	fast_gpio_set_off(pin);
 	while(cycle_cnt_read() - start < 6076 * (i)) {}
 	fast_gpio_write(pin, data & 1);
 	while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
@@ -124,7 +128,7 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
 	fast_gpio_write(pin, data & 128);
 	while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
-	fast_gpio_write(pin, 1);
+	fast_gpio_set_on(pin);
 	while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
 }
 
@@ -136,8 +140,19 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 	unsigned temp = 0;	
 	unsigned curr_value = 1;
 	while(curr_value <= n) {
-		test_gen(tx, curr_value, 6076);
-       	temp = scope(rx); 
+		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+		//printk("TX1: %d\n", curr_value & 0xFF000000);
+		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+		//printk("TX2: %d\n", curr_value & 0x00FF0000);
+		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+		//printk("TX3: %d\n", curr_value & 0x0000FF00);
+		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
+		//printk("TX4: %d\n", curr_value & 0x000000FF);
+       	temp |= scope(rx) << 24; 
+       	temp |= scope(rx) << 16; 
+       	temp |= scope(rx) << 8; 
+       	temp |= scope(rx) << 0; 
+		//printk("RX: %d\n", temp);
 		if(temp != curr_value) {
 			printk("Mismatch, got %d but expected %d\n",
 					temp, curr_value);
