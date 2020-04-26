@@ -148,7 +148,7 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
 		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
 		//printk("TX4: %d\n", curr_value & 0x000000FF);
-       	temp |= scope(rx) << 24; 
+       	temp = scope(rx) << 24; 
        	temp |= scope(rx) << 16; 
        	temp |= scope(rx) << 8; 
        	temp |= scope(rx) << 0; 
@@ -159,7 +159,6 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 			return;
     	}
 		curr_value++;
-		temp = 0;
 	}
 	printk ("client done: ended with %d\n", --curr_value); 
 }

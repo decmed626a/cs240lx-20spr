@@ -141,7 +141,7 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
     // we received 1 from server: next should be 0.
 	unsigned curr_value = 0;
 	for(int i = 0; i <= 4096; i++) {
-		curr_value |= scope(rx) << 24;
+		curr_value = scope(rx) << 24;
 		curr_value |= scope(rx) << 16;
 		curr_value |= scope(rx) << 8;
 		curr_value |= scope(rx) << 0;
@@ -153,8 +153,6 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
 		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
-		//printk("TX4: %d\n", curr_value & 0x000000FF);
-		curr_value = 0;
     }
 }
 
