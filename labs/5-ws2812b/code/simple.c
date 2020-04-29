@@ -57,6 +57,7 @@ void notmain(void) {
     neo_t h = neopix_init(pix_pin, npixels);
 	unsigned start = timer_get_usec();
 	dev_barrier();
+#if 0	
 	while(1) {
         for(int j = 0; j < 10; j++) {
             for(int i = 0; i < npixels; i++) {
@@ -65,12 +66,51 @@ void notmain(void) {
             }
         }
     }
-
+#endif
     // part 4:   do some kind of interesting trick with your light strip.
 
-    delay_ms(1000*3);
-	clean_reboot();
+	printk("Custom Pattern\n");
+# if 0
+	int j = 0;
+	while(1) {
+		j = 0;
+		if(j > _content_tiny_conv_tflite_len / 4) {
+			j = 0;
+		}
+		for(int i = 0; i < 60,  j < _content_tiny_conv_tflite_len / 4; i++, j+=3) {
+			neopix_write(h, i, _content_tiny_conv_tflite[j],
+							   _content_tiny_conv_tflite[j + 1],
+							   _content_tiny_conv_tflite[j + 2]);
+
+		}
+		neopix_flush(h);
+		delay_ms(10);
+	}
+#endif
+	uint8_t x, y, z, a, b, c;
+		x = 0;
+		y = 0;
+		z = 0;
+		a = 0xFF;
+		b = 0x33;
+		c = 0x55;
+		while(1) {
+			for(int i = 0; i < 60; i++) {
+			
+				uint8_t t = x ^ (x << 4);
+				x = y;
+				y = z;
+				z = a;
+				a ^= z ^ t ^ (z >> 1) ^ (t << 1);
+				b ^= z ^ t ^ (z >> 1) ^ (t << 1);
+				c ^= z ^ t ^ (z >> 1) ^ (t << 1);
+				neopix_write(h, i, a, b, c);
+		}
+		neopix_flush(h);
+		delay_ms(10);
+	}
 }
+
 
 // must be last so isn't inlined.
 #include "timing-checks.h"
