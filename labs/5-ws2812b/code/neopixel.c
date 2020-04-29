@@ -61,5 +61,10 @@ void neopix_clear(neo_t h) {
 }
 
 void neopix_write(neo_t h, uint32_t pos, uint8_t r, uint8_t g, uint8_t b) {
-    unimplemented();
+	dev_barrier();
+	h->pixels[pos].r=r;
+	dev_barrier();
+	h->pixels[pos].g=g;
+	dev_barrier();
+	h->pixels[pos].b=b;
 }
