@@ -24,6 +24,13 @@ static volatile unsigned *GPCLR1 = (void*) 0x2020002C;
 static volatile unsigned *GPLEV0 = (void*) 0x20200034;
 static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 
+static volatile int ninterrupt;
+static cq_t putQ;
+static sw_uart_t u;
+static volatile unsigned timeout = 0;
+static volatile int in_write = 0;
+
+
 // set GPIO <pin> on.
 static inline void fast_gpio_set_on(unsigned pin) {
     *GPSET0 |= 1 << (pin);
@@ -154,6 +161,27 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
 		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
     }
+}
+
+void interrupt_vector(unsigned pc) {
+	if (in_write) {panic();}
+	n_interrupt++;
+    // you don't have to check anything else besides
+    // if a gpio event was detected: 
+    //  - increment n_falling_edge if it was a falling edge
+    //  - increment n_rising_edge if it was rising, 
+    // make sure you clear the GPIO event!
+    if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
+		if(gpio_read(in_pin) == 0) {
+            cq_push(&putQ, sw_uart_getc_timeout(&u, timeout));
+		} else if (gpio_read(in_pin) > 0) {
+			n_rising_edge++;
+		}
+		else {
+			;
+		}
+	}
+	gpio_event_clear(in_pin);
 }
 
 void notmain(void) {

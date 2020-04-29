@@ -163,6 +163,27 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 	printk ("client done: ended with %d\n", --curr_value); 
 }
 
+void interrupt_vector(unsigned pc) {
+	if (in_write) {panic();}
+	n_interrupt++;
+    // you don't have to check anything else besides
+    // if a gpio event was detected: 
+    //  - increment n_falling_edge if it was a falling edge
+    //  - increment n_rising_edge if it was rising, 
+    // make sure you clear the GPIO event!
+    if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
+		if(gpio_read(in_pin) == 0) {
+            cq_push(&putQ, sw_uart_getc_timeout(&u, timeout));
+		} else if (gpio_read(in_pin) > 0) {
+			n_rising_edge++;
+		}
+		else {
+			;
+		}
+	}
+	gpio_event_clear(in_pin);
+}
+
 void notmain(void) {
     int rx = 20;
 	int tx = 21;
