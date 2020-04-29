@@ -223,7 +223,7 @@ static inline void pix_sendbit(unsigned pin, uint8_t b) {
 // becomes huge: unclear if better.  if you decide to inline it, make sure you run
 // tests before and after.  
 static void pix_sendbyte(unsigned pin, uint8_t b) {
-    for(int i = 7; i >=0; i++) {
+    for(int i = 7; i >=0; i--) {
 		pix_sendbit(pin, (b >> 1) & 1);
 	}
 }
