@@ -53,18 +53,13 @@ void notmain(void) {
     // part 3: make sure when you implement the neopixel 
     // interface works and pushes a pixel around your light
     // array.
-    printk("in part 3\n");
 	unsigned npixels = 60;  // you'll have to figure this out.
     neo_t h = neopix_init(pix_pin, npixels);
-    printk("after init\n");
 	unsigned start = timer_get_usec();
-    printk("get timer\n");
 	dev_barrier();
 	while(1) {
         for(int j = 0; j < 10; j++) {
-			printk("outer loop: placing cursor\n");
             for(int i = 0; i < npixels; i++) {
-                printk("inner loop: placing cursor\n");
 				place_cursor(h,i);
                 delay_ms(10-j);
             }
