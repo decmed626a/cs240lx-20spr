@@ -33,6 +33,7 @@ void neopix_flush(neo_t h) {
 
 neo_t neopix_init(uint8_t pin, unsigned npixel) {
     neo_t h;
+	
     unsigned nbytes = sizeof *h + sizeof h->pixels[0] * npixel;
     h = (void*)kmalloc(sizeof *h + sizeof h->pixels[0] * npixel);
     memset(h, 0, nbytes);
