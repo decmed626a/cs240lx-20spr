@@ -116,10 +116,6 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-    while (((*GPLEV0 & 0x200000) >> 21) == 0) {
-        ;
-    }
-
 	fast_gpio_set_off(pin);
 	while(cycle_cnt_read() - start < 6076 * (i)) {}
 	fast_gpio_write(pin, data & 1);
@@ -160,6 +156,7 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 			test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
 			//printk("TX4: %d\n", curr_value & 0x000000FF);
 			is_writing = 0;
+			system_enable_interrupts();
 		}
 	}
 	system_disable_interrupts();
@@ -179,10 +176,9 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-    unsigned temp = 0;
 	dev_barrier();
-    if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
-        if(gpio_read(rx) == 0) {
+    //if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
+        //if(gpio_read(rx) == 0) {
        		temp = scope(rx) << 24; 
        		temp |= scope(rx) << 16; 
        		temp |= scope(rx) << 8; 
@@ -191,12 +187,14 @@ void interrupt_vector(unsigned pc) {
 				printk("Mismatch, got %d but expected %d\n",
 					   temp, curr_value);
         	} else {
-				printk("Got: %d\n", temp);
+				//printk("Got: %d\n", temp);
+				//delay_us(10);
 				curr_value++;
 				is_writing = 1;
+				system_disable_interrupts();
 			}
-    	}
-	}
+    	//}
+	//}
     gpio_event_clear(rx);
     dev_barrier();
 }
@@ -212,7 +210,7 @@ void notmain() {
 
 	enable_cache();
     cycle_cnt_init();
-    system_enable_interrupts();
+    //system_enable_interrupts();
     server(tx, rx, 4096);
 
     // starter code.
