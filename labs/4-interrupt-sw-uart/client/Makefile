@@ -42,8 +42,6 @@ $(OBJS): $(DEPS)
 	$(OD) -D   $*.elf > $*.list
 	$(OCP) $*.elf -O binary $*.bin
 
-run:
-
 tags: 
 	ctags *.[chSs] $(LPP)/*.[ch] $(LPP)/*.[chSs]
 

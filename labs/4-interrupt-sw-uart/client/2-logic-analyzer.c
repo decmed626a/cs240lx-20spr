@@ -142,14 +142,17 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
 }
 
-static void server(unsigned tx, unsigned rx, unsigned n) {
+static void client(unsigned tx, unsigned rx, unsigned n) {
+    printk("am a client \n");
 	fast_gpio_set_on(tx);
-	printk("Am a server\n");
-    while (((*GPLEV0 & 0x100000)>> 20) == 0) {}
-	delay_ms(1);
-	unsigned temp = 0;	
-	unsigned curr_value = 1;
-	while(curr_value <= n) {
+    // we received 1 from server: next should be 0.
+	unsigned curr_value = 0;
+	for(int i = 0; i <= 4096; i++) {
+		curr_value = scope(rx) << 24;
+		curr_value |= scope(rx) << 16;
+		curr_value |= scope(rx) << 8;
+		curr_value |= scope(rx) << 0;
+		//printk("RX: %d\n", curr_value);
 		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
 		//printk("TX1: %d\n", curr_value & 0xFF000000);
 		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
@@ -157,20 +160,7 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
 		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
-		//printk("TX4: %d\n", curr_value & 0x000000FF);
-       	temp = scope(rx) << 24; 
-       	temp |= scope(rx) << 16; 
-       	temp |= scope(rx) << 8; 
-       	temp |= scope(rx) << 0; 
-		// printk("RX: %d\n", temp);
-		if(temp != curr_value) {
-			printk("Mismatch, got %d but expected %d\n",
-					temp, curr_value);
-			return;
-    	}
-		curr_value++;
-	}
-	printk ("client done: ended with %d\n", --curr_value); 
+    }
 }
 
 static volatile unsigned nevents = 0;
@@ -215,7 +205,7 @@ void notmain() {
 	enable_cache();
     cycle_cnt_init();
     system_enable_interrupts();
-    server(tx, rx, 4096);
+    client(tx, rx, 4096);
 
     // starter code.
     // make sure this works first, then try to measure the overheads.
