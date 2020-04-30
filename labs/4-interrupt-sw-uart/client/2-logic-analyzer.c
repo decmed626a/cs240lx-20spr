@@ -69,8 +69,7 @@ unsigned cycles_per_sec(unsigned s) {
     unsigned last = cycle_cnt_read();
     return last-first;
 }
-
-unsigned
+unsigned 
 scope(unsigned pin) {
 
     unsigned output = 0;
@@ -82,24 +81,24 @@ scope(unsigned pin) {
     while(cycle_cnt_read() - start < 3038 * (i)) {}
     
     while(cycle_cnt_read() - start < 6076 * (i) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 7;
-    while(cycle_cnt_read() - start < 6076 * (i + 1) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 6;
-    while(cycle_cnt_read() - start < 6076 * (i + 2) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 5;
-    while(cycle_cnt_read() - start < 6076 * (i + 3) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 4;
-    while(cycle_cnt_read() - start < 6076 * (i + 4) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 3;
-    while(cycle_cnt_read() - start < 6076 * (i + 5) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 2;
-    while(cycle_cnt_read() - start < 6076 * (i + 6) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 1;
-    while(cycle_cnt_read() - start < 6076 * (i + 7) + 3038) {}
     output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 0;
+    while(cycle_cnt_read() - start < 6076 * (i + 1) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 1;
+    while(cycle_cnt_read() - start < 6076 * (i + 2) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 2;
+    while(cycle_cnt_read() - start < 6076 * (i + 3) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 3;
+    while(cycle_cnt_read() - start < 6076 * (i + 4) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 4;
+    while(cycle_cnt_read() - start < 6076 * (i + 5) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 5;
+    while(cycle_cnt_read() - start < 6076 * (i + 6) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 6;
+    while(cycle_cnt_read() - start < 6076 * (i + 7) + 3038) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 7;
     while(cycle_cnt_read() - start < 6076 * (i + 8) + 3038) {}
-	/*
-    output = (bit7 & 1) | \
+    /*
+	output = (bit7 & 1) | \
              (bit6 & 1) << 1 | \
              (bit5 & 1) << 2 | \
              (bit4 & 1) << 3 | \
@@ -112,55 +111,59 @@ scope(unsigned pin) {
 }
 
 // send N samples at <ncycle> cycles each in a simple way.
+// send N samples at <ncycle> cycles each in a simple way.
 void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
-	unsigned i = 1;
+    unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-    while (((*GPLEV0 & 0x200000) >> 21) == 0) {
-        ;
-    }
+	while (((*GPLEV0 & 0x200000) >> 21) == 0) {
+		;
+	}
 
-	fast_gpio_set_off(pin);
-	while(cycle_cnt_read() - start < 6076 * (i)) {}
-	fast_gpio_write(pin, data & 1);
-	while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
-	fast_gpio_write(pin, data & 2);
-	while(cycle_cnt_read() - start < 6076 * (i + 2)) {}
-	fast_gpio_write(pin, data & 4);
-	while(cycle_cnt_read() - start < 6076 * (i + 3)) {}
-	fast_gpio_write(pin, data & 8);
-	while(cycle_cnt_read() - start < 6076 * (i + 4)) {}
-	fast_gpio_write(pin, data & 16);
-	while(cycle_cnt_read() - start < 6076 * (i + 5)) {}
-	fast_gpio_write(pin, data & 32);
-	while(cycle_cnt_read() - start < 6076 * (i + 6)) {}
-	fast_gpio_write(pin, data & 64);
-	while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
-	fast_gpio_write(pin, data & 128);
-	while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
-	fast_gpio_set_on(pin);
-	while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
+    fast_gpio_set_off(pin);
+    while(cycle_cnt_read() - start < 6076 * (i)) {}
+    fast_gpio_write(pin, data & 128);
+    while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
+    fast_gpio_write(pin, data & 64);
+    while(cycle_cnt_read() - start < 6076 * (i + 2)) {}
+    fast_gpio_write(pin, data & 32);
+    while(cycle_cnt_read() - start < 6076 * (i + 3)) {}
+    fast_gpio_write(pin, data & 16);
+    while(cycle_cnt_read() - start < 6076 * (i + 4)) {}
+    fast_gpio_write(pin, data & 8);
+    while(cycle_cnt_read() - start < 6076 * (i + 5)) {}
+    fast_gpio_write(pin, data & 4);
+    while(cycle_cnt_read() - start < 6076 * (i + 6)) {}
+    fast_gpio_write(pin, data & 2);
+    while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
+    fast_gpio_write(pin, data & 1);
+    while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
+    fast_gpio_set_on(pin);
+    while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
 }
 
+volatile unsigned curr_value = 0;
+volatile unsigned is_writing = 0;
 static void client(unsigned tx, unsigned rx, unsigned n) {
     printk("am a client \n");
 	fast_gpio_set_on(tx);
     // we received 1 from server: next should be 0.
-	unsigned curr_value = 0;
-	for(int i = 0; i <= 4096; i++) {
-		curr_value = scope(rx) << 24;
-		curr_value |= scope(rx) << 16;
-		curr_value |= scope(rx) << 8;
-		curr_value |= scope(rx) << 0;
-		//printk("RX: %d\n", curr_value);
-		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
-		//printk("TX1: %d\n", curr_value & 0xFF000000);
-		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
-		//printk("TX2: %d\n", curr_value & 0x00FF0000);
-		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
-		//printk("TX3: %d\n", curr_value & 0x0000FF00);
-		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
-    }
+	while(curr_value <= n) {
+		if(is_writing) {
+			//printk("RX: %d\n", curr_value);
+   			printk("Send back: %d\n", curr_value);
+			test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+			//printk("TX1: %d\n", curr_value & 0xFF000000);
+			test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+			//printk("TX2: %d\n", curr_value & 0x00FF0000);
+			test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+			//printk("TX3: %d\n", curr_value & 0x0000FF00);
+			test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
+    		is_writing = 0;
+		} else {
+			;
+		}
+	}
 }
 
 static volatile unsigned nevents = 0;
@@ -173,21 +176,18 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-	unsigned s = cycle_cnt_read();
     dev_barrier();
     if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
         if(gpio_read(rx) == 0) {
-            n_falling_edge++;
-			nevents++;
-        } else if (gpio_read(rx) > 0) {
-            n_rising_edge++;
-			nevents++;
-        }
-        else {
-            ;
-        }
-    }
-	cycle_counter = s;
+			curr_value = scope(rx) << 24;
+			curr_value |= scope(rx) << 16;
+			curr_value |= scope(rx) << 8;
+			curr_value |= scope(rx) << 0;
+			if(curr_value == 4096) {system_disable_interrupts();}
+			
+			is_writing = 1; 
+		}
+	}
     gpio_event_clear(rx);
     dev_barrier();
 }
@@ -199,7 +199,6 @@ void notmain() {
 	gpio_set_output(tx);
     gpio_set_input(rx);
     
-	gpio_int_rising_edge(rx);
     gpio_int_falling_edge(rx);
 
 	enable_cache();

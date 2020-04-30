@@ -142,39 +142,35 @@ void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
 	while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
 }
 
+volatile unsigned curr_value = 0;
+volatile unsigned is_writing = 1;
 static void server(unsigned tx, unsigned rx, unsigned n) {
 	fast_gpio_set_on(tx);
 	printk("Am a server\n");
     while (((*GPLEV0 & 0x100000)>> 20) == 0) {}
 	delay_ms(1);
-	unsigned temp = 0;	
-	unsigned curr_value = 1;
 	while(curr_value <= n) {
-		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
-		//printk("TX1: %d\n", curr_value & 0xFF000000);
-		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
-		//printk("TX2: %d\n", curr_value & 0x00FF0000);
-		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
-		//printk("TX3: %d\n", curr_value & 0x0000FF00);
-		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
-		//printk("TX4: %d\n", curr_value & 0x000000FF);
-       	temp = scope(rx) << 24; 
-       	temp |= scope(rx) << 16; 
-       	temp |= scope(rx) << 8; 
-       	temp |= scope(rx) << 0; 
-		// printk("RX: %d\n", temp);
-		if(temp != curr_value) {
-			printk("Mismatch, got %d but expected %d\n",
-					temp, curr_value);
-			return;
-    	}
-		curr_value++;
+		if(is_writing) {
+			test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+			//printk("TX1: %d\n", curr_value & 0xFF000000);
+			test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+			//printk("TX2: %d\n", curr_value & 0x00FF0000);
+			test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+			//printk("TX3: %d\n", curr_value & 0x0000FF00);
+			test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
+			//printk("TX4: %d\n", curr_value & 0x000000FF);
+			is_writing = 0;
+		}
 	}
+	system_disable_interrupts();
 	printk ("client done: ended with %d\n", --curr_value); 
 }
 
 static volatile unsigned nevents = 0;
 static volatile cycle_counter = 0;
+
+volatile unsigned temp = 0;
+
 // client has to define this.
 void interrupt_vector(unsigned pc) {
 
@@ -183,21 +179,24 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-	unsigned s = cycle_cnt_read();
-    dev_barrier();
+    unsigned temp = 0;
+	dev_barrier();
     if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
         if(gpio_read(rx) == 0) {
-            n_falling_edge++;
-			nevents++;
-        } else if (gpio_read(rx) > 0) {
-            n_rising_edge++;
-			nevents++;
-        }
-        else {
-            ;
-        }
-    }
-	cycle_counter = s;
+       		temp = scope(rx) << 24; 
+       		temp |= scope(rx) << 16; 
+       		temp |= scope(rx) << 8; 
+       		temp |= scope(rx) << 0; 
+			if(temp != curr_value) {
+				printk("Mismatch, got %d but expected %d\n",
+					   temp, curr_value);
+        	} else {
+				printk("Got: %d\n", temp);
+				curr_value++;
+				is_writing = 1;
+			}
+    	}
+	}
     gpio_event_clear(rx);
     dev_barrier();
 }
@@ -209,7 +208,6 @@ void notmain() {
 	gpio_set_output(tx);
     gpio_set_input(rx);
     
-	gpio_int_rising_edge(rx);
     gpio_int_falling_edge(rx);
 
 	enable_cache();
