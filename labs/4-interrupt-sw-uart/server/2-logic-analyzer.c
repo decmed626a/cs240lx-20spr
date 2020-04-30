@@ -1,7 +1,14 @@
-// engler, cs240lx: skeleton for test generation.  
+/*
+ * engler, cs140e: simple tests to check that you are handling rising and falling
+ * edge interrupts correctly.
+ *
+ * NOTE: make sure you connect your GPIO 20 to your GPIO 21 (i.e., have it "loopback")
+ */
 #include "rpi.h"
-#include "cs140e-src/cycle-count.h"
-#include "cs140e-src/cycle-util.h"
+#include "timer-interrupt.h"
+#include "libc/circular.h"
+#include "sw-uart.h"
+#include "cycle-util.h"
 
 // see broadcomm documents for magic addresses.
 #define GPIO_BASE 0x20200000
@@ -25,7 +32,10 @@ static volatile unsigned *GPCLR1 = (void*) 0x2020002C;
 static volatile unsigned *GPLEV0 = (void*) 0x20200034;
 static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 
-#include "../scope-constants.h"
+static int rx = 20;
+static int tx = 21;
+volatile int n_rising_edge = 0;
+volatile int n_falling_edge = 0;
 
 // set GPIO <pin> on.
 static inline void fast_gpio_set_on(unsigned pin) {
@@ -163,39 +173,51 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 	printk ("client done: ended with %d\n", --curr_value); 
 }
 
+static volatile unsigned nevents = 0;
+static volatile cycle_counter = 0;
+// client has to define this.
 void interrupt_vector(unsigned pc) {
-	if (in_write) {panic();}
-	n_interrupt++;
+
     // you don't have to check anything else besides
-    // if a gpio event was detected: 
+    // if a gpio event was detected:
     //  - increment n_falling_edge if it was a falling edge
-    //  - increment n_rising_edge if it was rising, 
+    //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
+	unsigned s = cycle_cnt_read();
+    dev_barrier();
     if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
-		if(gpio_read(in_pin) == 0) {
-            cq_push(&putQ, sw_uart_getc_timeout(&u, timeout));
-		} else if (gpio_read(in_pin) > 0) {
-			n_rising_edge++;
-		}
-		else {
-			;
-		}
-	}
-	gpio_event_clear(in_pin);
+        if(gpio_read(rx) == 0) {
+            n_falling_edge++;
+			nevents++;
+        } else if (gpio_read(rx) > 0) {
+            n_rising_edge++;
+			nevents++;
+        }
+        else {
+            ;
+        }
+    }
+	cycle_counter = s;
+    gpio_event_clear(rx);
+    dev_barrier();
 }
 
-void notmain(void) {
-    int rx = 20;
-	int tx = 21;
-    gpio_set_output(tx);
+void notmain() {
+    uart_init();
+    int_init();
+    
+	gpio_set_output(tx);
     gpio_set_input(rx);
+    
+	gpio_int_rising_edge(rx);
+    gpio_int_falling_edge(rx);
+
 	enable_cache();
     cycle_cnt_init();
+    system_enable_interrupts();
 
-    server(tx, rx, 4096);
-
-    // keep it seperate so easy to look at assembly.
-	
+    // starter code.
+    // make sure this works first, then try to measure the overheads.
 
     clean_reboot();
 }
