@@ -2,17 +2,12 @@
 #include "fake-pi.h"
 
 unsigned fake_time_usec = 0;
-unsigned cycle_cnt = 0;
 // set the starting fake time.
 void fake_time_init(unsigned init_time) {
     fake_time_usec = init_time;
 }
 
-void cycle_cnt_init(void) {
-	cycle_cnt = 0;
-}
-
-unsigned cycle_cnt_read(void) {
-	cycle_cnt += 150;
-	return cycle_cnt;
+void delay_us(unsigned us) {
+	trace("delay_us = %dusec\n", us);
+	fake_time_usec += us;
 }

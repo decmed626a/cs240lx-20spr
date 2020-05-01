@@ -4,7 +4,6 @@
 
 void notmain(void) {
     uart_init();
-	cycle_cnt_init();
     unsigned up = 21, down = 20;
 
     // i don't believe we need to set input (since the state is sticky)

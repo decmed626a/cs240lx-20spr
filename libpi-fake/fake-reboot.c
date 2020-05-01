@@ -2,5 +2,6 @@
 #include <stdlib.h>
 
 void clean_reboot(void) {
-	printf("clean reboot\n");
+	printf("TRACE:clean_reboot:clean reboot\n");
+	exit(0);
 }
