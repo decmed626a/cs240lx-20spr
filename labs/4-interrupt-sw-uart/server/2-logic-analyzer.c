@@ -164,7 +164,7 @@ static void server(unsigned tx, unsigned rx, unsigned n) {
 }
 
 static volatile unsigned nevents = 0;
-static volatile cycle_counter = 0;
+static volatile int cycle_counter = 0;
 
 volatile unsigned temp = 0;
 
@@ -176,7 +176,7 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-	dev_barrier();
+	//dev_barrier();
     //if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
         //if(gpio_read(rx) == 0) {
        		temp = scope(rx) << 24; 
@@ -196,7 +196,7 @@ void interrupt_vector(unsigned pc) {
     	//}
 	//}
     gpio_event_clear(rx);
-    dev_barrier();
+    //dev_barrier();
 }
 
 void notmain() {

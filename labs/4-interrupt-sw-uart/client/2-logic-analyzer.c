@@ -69,15 +69,18 @@ unsigned cycles_per_sec(unsigned s) {
     unsigned last = cycle_cnt_read();
     return last-first;
 }
-unsigned 
+static inline unsigned 
 scope(unsigned pin) {
 
     unsigned output = 0;
     unsigned i = 1;
+    //while (((*GPLEV0 & 0x100000)>> 20) > 0) {
+    //    ;
+    //}
+    unsigned start  = cycle_cnt_read();
     while (((*GPLEV0 & 0x100000)>> 20) > 0) {
         ;
     }
-    unsigned start  = cycle_cnt_read();
     while(cycle_cnt_read() - start < 3038 * (i)) {}
     
     while(cycle_cnt_read() - start < 6076 * (i) + 3038) {}
@@ -166,7 +169,7 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 }
 
 static volatile unsigned nevents = 0;
-static volatile cycle_counter = 0;
+static volatile int cycle_counter = 0;
 // client has to define this.
 void interrupt_vector(unsigned pc) {
 
@@ -175,7 +178,7 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-    dev_barrier();
+    //dev_barrier();
     //if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
         //if(gpio_read(rx) == 0) {
 			curr_value = scope(rx) << 24;
@@ -187,7 +190,7 @@ void interrupt_vector(unsigned pc) {
 		//}
 	//}
     gpio_event_clear(rx);
-    dev_barrier();
+    //dev_barrier();
 }
 
 void notmain() {
