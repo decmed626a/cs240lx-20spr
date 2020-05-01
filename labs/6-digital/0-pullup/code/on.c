@@ -11,8 +11,8 @@ void notmain(void) {
     gpio_set_input(up);
     gpio_set_pullup(up);
     printk("pullup=%d, this is sticky: touch red lead to this pin and black to ground: should see a ~3V reading on multimeter\n", up);
-	while(1){}
-    gpio_set_input(up);
+    
+	gpio_set_input(up);
     gpio_set_pulldown(down);
     printk("pulldown=%d, this is sticky: touch black lead to this pin, and red to 3v: should see a ~3V reading on multimeter\n", down);
 
