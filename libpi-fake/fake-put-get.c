@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include "rpi.h"
 
+#include "fake-pi.h"
+
+volatile unsigned* TIMER_ADDRESS = (void*)0x20003004;
+
+
 typedef struct {
 	volatile void* addr;
 	unsigned data;
@@ -19,7 +24,14 @@ unsigned get32(const volatile void *addr) {
     // you won't need this if you write fake versions of the timer code.
     // however, if you link in the raw timer.c from rpi, thne you'll need
     // to recognize the time address and returns something sensible.
-    unimplemented();
+	unsigned val = 0;
+	if(addr == TIMER_ADDRESS) {
+		val = fake_time_inc(1);
+	} else {
+		val = fake_random();
+	}
+	trace("GET32(%p)=0x%x\n", addr, val);
+	return val;
 }
 
 // for today: simply print (addr,val) using trace()
@@ -27,7 +39,7 @@ void put32(volatile void *addr, unsigned val) {
 	//for(int i = 0; i < fake_index; i++) {
 	//	if(addr == fake_mem[i].addr) {
 	//		fake_mem[i].data = val;
-			printf("TRACE:PUT32(%p)=0x%x\n", addr, val);
+			trace("PUT32(%p)=0x%x\n", addr, val);
 	//		return;
 	//	}
 	//}

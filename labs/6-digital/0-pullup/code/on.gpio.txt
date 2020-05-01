@@ -1,8 +1,7 @@
 TRACE:fake_random:random called=1 times, value=1804289383
 TRACE:uart_init:uart
-TRACE:fake_random:random called=2 times, value=846930886
-TRACE:get32:GET32(0x20200008)=0x327b23c6
-TRACE:put32:PUT32(0x20200008)=0x327b23c6
+TRACE:gpio_set_input:pin=21
+TRACE:dev_barrier:dev barrier
 TRACE:put32:PUT32(0x20200094)=0x2
 TRACE:get32:GET32(0x20003004)=0x6b8b4568
 TRACE:get32:GET32(0x20003004)=0x6b8b4569
@@ -611,10 +610,10 @@ TRACE:get32:GET32(0x20003004)=0x6b8b47c0
 TRACE:get32:GET32(0x20003004)=0x6b8b47c1
 TRACE:get32:GET32(0x20003004)=0x6b8b47c2
 TRACE:get32:GET32(0x20003004)=0x6b8b47c3
+TRACE:dev_barrier:dev barrier
 PI:pullup=21, this is sticky: touch red lead to this pin and black to ground: should see a ~3V reading on multimeter
-TRACE:fake_random:random called=3 times, value=1681692777
-TRACE:get32:GET32(0x20200008)=0x643c9869
-TRACE:put32:PUT32(0x20200008)=0x643c9841
+TRACE:gpio_set_input:pin=21
+TRACE:dev_barrier:dev barrier
 TRACE:put32:PUT32(0x20200094)=0x1
 TRACE:get32:GET32(0x20003004)=0x6b8b47c4
 TRACE:get32:GET32(0x20003004)=0x6b8b47c5
@@ -1223,5 +1222,6 @@ TRACE:get32:GET32(0x20003004)=0x6b8b4a1c
 TRACE:get32:GET32(0x20003004)=0x6b8b4a1d
 TRACE:get32:GET32(0x20003004)=0x6b8b4a1e
 TRACE:get32:GET32(0x20003004)=0x6b8b4a1f
+TRACE:dev_barrier:dev barrier
 PI:pulldown=20, this is sticky: touch black lead to this pin, and red to 3v: should see a ~3V reading on multimeter
 TRACE:clean_reboot:clean reboot
