@@ -25,11 +25,13 @@
 //     reject noise.  
 //
 hall_t hall_init_a1104(unsigned input_pin, unsigned debounce_cnt) {
-    unimplemented();
+	hall_t out_struct = {.pin = input_pin, .debounce = debounce_cnt};
+	gpio_set_input(input_pin);
+	return out_struct;
 }
 
 // use gpio_read() to return 1 if magnet touching, 0 otherwise.
 // only returns 1 if it has <debounce_cnt> reads of the same value.
 unsigned hall_read(hall_t *h) {
-    unimplemented();
+	gpio_read(h->pin);
 }
