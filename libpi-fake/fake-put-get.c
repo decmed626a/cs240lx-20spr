@@ -27,7 +27,7 @@ void put32(volatile void *addr, unsigned val) {
 	//for(int i = 0; i < fake_index; i++) {
 	//	if(addr == fake_mem[i].addr) {
 	//		fake_mem[i].data = val;
-			printf("TRACE:PUT32(0x%p)=0x%x\n", addr, val);
+			printf("TRACE:PUT32(%p)=0x%x\n", addr, val);
 	//		return;
 	//	}
 	//}
