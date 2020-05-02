@@ -34,6 +34,7 @@ static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 
 static int rx = 20;
 static int tx = 21;
+static cq_t putQ;
 volatile int n_rising_edge = 0;
 volatile int n_falling_edge = 0;
 
@@ -148,22 +149,12 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 	system_enable_interrupts();
 	fast_gpio_set_on(tx);
     // we received 1 from server: next should be 0.
-	while(curr_value <= n) {
-		if(is_writing) {
-			//printk("RX: %d\n", curr_value);
-			//printk("Send: %d\n", curr_value);
-			//delay_us(10);
-			test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
-			//printk("TX1: %d\n", curr_value & 0xFF000000);
-			test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
-			//printk("TX2: %d\n", curr_value & 0x00FF0000);
-			test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
-			//printk("TX3: %d\n", curr_value & 0x0000FF00);
-			test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
-    		is_writing = 0;
+	while(curr_value < n) {
+		while(!cq_empty(&putQ)) {
+			curr_value = cq_pop(&putQ);
+			system_disable_interrupts();
+			test_gen(tx, curr_value, 6076);
 			system_enable_interrupts();
-		} else {
-			;
 		}
 	}
 }
@@ -178,19 +169,10 @@ void interrupt_vector(unsigned pc) {
     //  - increment n_falling_edge if it was a falling edge
     //  - increment n_rising_edge if it was rising,
     // make sure you clear the GPIO event!
-    //dev_barrier();
-    //if(is_gpio_int(GPIO_INT0) || is_gpio_int(GPIO_INT1)) {
-        //if(gpio_read(rx) == 0) {
-			curr_value = scope(rx) << 24;
-			curr_value |= scope(rx) << 16;
-			curr_value |= scope(rx) << 8;
-			curr_value |= scope(rx) << 0;
-			is_writing = 1;
-			system_disable_interrupts();
-		//}
-	//}
+    dev_barrier();
+	cq_push(&putQ, scope(rx));
     gpio_event_clear(rx);
-    //dev_barrier();
+    dev_barrier();
 }
 
 void notmain() {
@@ -201,11 +183,12 @@ void notmain() {
     gpio_set_input(rx);
     
     gpio_int_falling_edge(rx);
+	cq_init(&putQ, 1);
 
 	enable_cache();
     cycle_cnt_init();
     //system_enable_interrupts();
-    client(tx, rx, 4096);
+    client(tx, rx, 255);
 
     // starter code.
     // make sure this works first, then try to measure the overheads.
