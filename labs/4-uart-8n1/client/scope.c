@@ -79,28 +79,28 @@ sw_uart_get8(my_sw_uart_t* uart) {
     unsigned output = 0;
     unsigned i = 1;
     unsigned half_delay = uart->cycle_per_bit >> 1;
-    while (((*GPLEV0 & 0x100000)>> 20) > 0) {
+    while (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) > 0) {
         ;
     }
     unsigned start  = cycle_cnt_read();
     while(cycle_cnt_read() - start < (uart->cycle_per_bit >> 1) * (i)) {}
     
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 7;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 7;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 6;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 6;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 5;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 5;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 4;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 4;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 3;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 3;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 2;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 2;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 1;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 1;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7) + half_delay) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 0;
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 0;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8) + half_delay) {}
     /*
     output = (bit7 & 1) | \
@@ -120,7 +120,7 @@ void sw_uart_put8(my_sw_uart_t* uart, uint8_t data) {
     unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-    while (((*GPLEV0 & 0x200000) >> 21) == 0) {
+    while (((*GPLEV0 & (1 << uart->tx)) >> uart->tx) == 0) {
         ;
     }
 
