@@ -1,7 +1,6 @@
-// engler, cs240lx: simple scope skeleton for logic analyzer.
+// engler, cs240lx: simple sw_uart_get8 skeleton for logic analyzer.
 #include "rpi.h"
 #include "cs140e-src/cycle-count.h"
-#include "../scope-constants.h"
 
 #define GPIO_BASE 0x20200000
 static volatile unsigned *gpio_fsel0 = (void*)(GPIO_BASE + 0x00);
@@ -63,7 +62,7 @@ unsigned cycles_per_sec(unsigned s) {
 //
 // return value: the number of samples recorded.
 unsigned 
-scope(unsigned pin) {
+sw_uart_get8(unsigned pin) {
 
     unsigned output = 0;
     unsigned i = 1;
@@ -104,7 +103,7 @@ scope(unsigned pin) {
 }
 
 // send N samples at <ncycle> cycles each in a simple way.
-void test_gen(unsigned pin, uint8_t data, unsigned ncycle) {
+void sw_uart_put8(unsigned pin, uint8_t data, unsigned ncycle) {
     unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
@@ -141,18 +140,18 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
     // we received 1 from server: next should be 0.
 	unsigned curr_value = 0;
 	for(int i = 0; i <= 4096; i++) {
-		curr_value = scope(rx) << 24;
-		curr_value |= scope(rx) << 16;
-		curr_value |= scope(rx) << 8;
-		curr_value |= scope(rx) << 0;
+		curr_value = sw_uart_get8(rx) << 24;
+		curr_value |= sw_uart_get8(rx) << 16;
+		curr_value |= sw_uart_get8(rx) << 8;
+		curr_value |= sw_uart_get8(rx) << 0;
 		//printk("RX: %d\n", curr_value);
-		test_gen(tx, (curr_value & 0xFF000000) >> 24, 6076);
+		sw_uart_put8(tx, (curr_value & 0xFF000000) >> 24, 6076);
 		//printk("TX1: %d\n", curr_value & 0xFF000000);
-		test_gen(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+		sw_uart_put8(tx, (curr_value & 0x00FF0000) >> 16, 6076);
 		//printk("TX2: %d\n", curr_value & 0x00FF0000);
-		test_gen(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+		sw_uart_put8(tx, (curr_value & 0x0000FF00) >> 8, 6076);
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
-		test_gen(tx, (curr_value & 0x000000FF) >> 0, 6076);
+		sw_uart_put8(tx, (curr_value & 0x000000FF) >> 0, 6076);
     }
 }
 
