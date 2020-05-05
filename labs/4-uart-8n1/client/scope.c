@@ -86,21 +86,21 @@ sw_uart_get8(my_sw_uart_t* uart) {
     while(cycle_cnt_read() - start < (uart->cycle_per_bit >> 1) * (i)) {}
     
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 7;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 6;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 5;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 4;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 3;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 2;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6) + half_delay) {}
-    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 1;
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7) + half_delay) {}
     output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 0;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 1;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 2;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 3;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 4;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 5;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 6;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7) + half_delay) {}
+    output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 7;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8) + half_delay) {}
     /*
     output = (bit7 & 1) | \
@@ -126,21 +126,21 @@ void sw_uart_put8(my_sw_uart_t* uart, uint8_t data) {
 
     fast_gpio_set_off(uart->tx);
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i)) {}
-    fast_gpio_write(uart->tx, data & 1);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1)) {}
-    fast_gpio_write(uart->tx, data & 2);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2)) {}
-    fast_gpio_write(uart->tx, data & 4);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3)) {}
-    fast_gpio_write(uart->tx, data & 8);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4)) {}
-    fast_gpio_write(uart->tx, data & 16);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5)) {}
-    fast_gpio_write(uart->tx, data & 32);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6)) {}
-    fast_gpio_write(uart->tx, data & 64);
-    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7)) {}
     fast_gpio_write(uart->tx, data & 128);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1)) {}
+    fast_gpio_write(uart->tx, data & 64);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2)) {}
+    fast_gpio_write(uart->tx, data & 32);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3)) {}
+    fast_gpio_write(uart->tx, data & 16);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4)) {}
+    fast_gpio_write(uart->tx, data & 8);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5)) {}
+    fast_gpio_write(uart->tx, data & 4);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6)) {}
+    fast_gpio_write(uart->tx, data & 2);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7)) {}
+    fast_gpio_write(uart->tx, data & 1);
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8)) {}
     fast_gpio_set_on(uart->tx);
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 9)) {}
