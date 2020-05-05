@@ -170,7 +170,7 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
 void notmain(void) {
     int rx = 20;
     int tx = 21;
-    u = sw_uart_init(tx, rx, 115200);
+    u = sw_uart_init(tx, rx, 921600);
 	gpio_set_output(tx);
     gpio_set_input(rx);
     enable_cache();
