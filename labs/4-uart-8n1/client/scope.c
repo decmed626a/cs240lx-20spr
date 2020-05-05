@@ -23,6 +23,18 @@ static volatile unsigned *GPCLR1 = (void*) 0x2020002C;
 static volatile unsigned *GPLEV0 = (void*) 0x20200034;
 static volatile unsigned *GPLEV1 = (void*) 0x20200038;
 
+typedef struct {
+    int tx,rx;
+    unsigned baud;
+    unsigned cycle_per_bit;  // usec we send each bit.
+} my_sw_uart_t;
+
+static  my_sw_uart_t u; 
+// we inline compute usec_per_bit b/c we don't have division on the pi.  division
+// by a constant allows the compiler to pre-compute.
+#define sw_uart_init(_tx,_rx,_baud) \
+    (my_sw_uart_t){ .tx = _tx, .rx = _rx, .baud = _baud, .cycle_per_bit = (700 * 1000*1000)/_baud }
+
 // set GPIO <pin> on.
 static inline void fast_gpio_set_on(unsigned pin) {
     *GPSET0 |= 1 << (pin);
@@ -61,36 +73,37 @@ unsigned cycles_per_sec(unsigned s) {
 //  2. we have recorded <n_max> samples.
 //
 // return value: the number of samples recorded.
-unsigned 
-sw_uart_get8(unsigned pin) {
+unsigned
+sw_uart_get8(my_sw_uart_t* uart) {
 
     unsigned output = 0;
     unsigned i = 1;
+    unsigned half_delay = uart->cycle_per_bit >> 1;
     while (((*GPLEV0 & 0x100000)>> 20) > 0) {
         ;
     }
     unsigned start  = cycle_cnt_read();
-    while(cycle_cnt_read() - start < 3038 * (i)) {}
+    while(cycle_cnt_read() - start < (uart->cycle_per_bit >> 1) * (i)) {}
     
-    while(cycle_cnt_read() - start < 6076 * (i) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 0;
-    while(cycle_cnt_read() - start < 6076 * (i + 1) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 1;
-    while(cycle_cnt_read() - start < 6076 * (i + 2) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 2;
-    while(cycle_cnt_read() - start < 6076 * (i + 3) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 3;
-    while(cycle_cnt_read() - start < 6076 * (i + 4) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 4;
-    while(cycle_cnt_read() - start < 6076 * (i + 5) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 5;
-    while(cycle_cnt_read() - start < 6076 * (i + 6) + 3038) {}
-    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 6;
-    while(cycle_cnt_read() - start < 6076 * (i + 7) + 3038) {}
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i) + half_delay) {}
     output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 7;
-    while(cycle_cnt_read() - start < 6076 * (i + 8) + 3038) {}
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 6;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 5;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 4;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 3;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 2;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 1;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7) + half_delay) {}
+    output |= (((*GPLEV0 & 0x100000) >> 20) & 1) << 0;
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8) + half_delay) {}
     /*
-	output = (bit7 & 1) | \
+    output = (bit7 & 1) | \
              (bit6 & 1) << 1 | \
              (bit5 & 1) << 2 | \
              (bit4 & 1) << 3 | \
@@ -99,39 +112,38 @@ sw_uart_get8(unsigned pin) {
              (bit1 & 1) << 6 | \
              (bit0 & 1) << 7;
     */
-	return output;
+    return output;
 }
 
 // send N samples at <ncycle> cycles each in a simple way.
-void sw_uart_put8(unsigned pin, uint8_t data, unsigned ncycle) {
+void sw_uart_put8(my_sw_uart_t* uart, uint8_t data) {
     unsigned i = 1;
     unsigned start  = cycle_cnt_read();
 
-	while (((*GPLEV0 & 0x200000) >> 21) == 0) {
-		;
-	}
+    while (((*GPLEV0 & 0x200000) >> 21) == 0) {
+        ;
+    }
 
-    fast_gpio_set_off(pin);
-    while(cycle_cnt_read() - start < 6076 * (i)) {}
-    fast_gpio_write(pin, data & 128);
-    while(cycle_cnt_read() - start < 6076 * (i + 1)) {}
-    fast_gpio_write(pin, data & 64);
-    while(cycle_cnt_read() - start < 6076 * (i + 2)) {}
-    fast_gpio_write(pin, data & 32);
-    while(cycle_cnt_read() - start < 6076 * (i + 3)) {}
-    fast_gpio_write(pin, data & 16);
-    while(cycle_cnt_read() - start < 6076 * (i + 4)) {}
-    fast_gpio_write(pin, data & 8);
-    while(cycle_cnt_read() - start < 6076 * (i + 5)) {}
-    fast_gpio_write(pin, data & 4);
-    while(cycle_cnt_read() - start < 6076 * (i + 6)) {}
-    fast_gpio_write(pin, data & 2);
-    while(cycle_cnt_read() - start < 6076 * (i + 7)) {}
-    fast_gpio_write(pin, data & 1);
-    while(cycle_cnt_read() - start < 6076 * (i + 8)) {}
-    fast_gpio_set_on(pin);
-    while(cycle_cnt_read() - start < 6076 * (i + 9)) {}
-
+    fast_gpio_set_off(uart->tx);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i)) {}
+    fast_gpio_write(uart->tx, data & 1);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 1)) {}
+    fast_gpio_write(uart->tx, data & 2);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 2)) {}
+    fast_gpio_write(uart->tx, data & 4);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 3)) {}
+    fast_gpio_write(uart->tx, data & 8);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 4)) {}
+    fast_gpio_write(uart->tx, data & 16);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 5)) {}
+    fast_gpio_write(uart->tx, data & 32);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 6)) {}
+    fast_gpio_write(uart->tx, data & 64);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7)) {}
+    fast_gpio_write(uart->tx, data & 128);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8)) {}
+    fast_gpio_set_on(uart->tx);
+    while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 9)) {}
 }
 
 static void client(unsigned tx, unsigned rx, unsigned n) {
@@ -140,25 +152,26 @@ static void client(unsigned tx, unsigned rx, unsigned n) {
     // we received 1 from server: next should be 0.
 	unsigned curr_value = 0;
 	for(int i = 0; i <= 4096; i++) {
-		curr_value = sw_uart_get8(rx) << 24;
-		curr_value |= sw_uart_get8(rx) << 16;
-		curr_value |= sw_uart_get8(rx) << 8;
-		curr_value |= sw_uart_get8(rx) << 0;
+		curr_value = sw_uart_get8(&u) << 24;
+		curr_value |= sw_uart_get8(&u) << 16;
+		curr_value |= sw_uart_get8(&u) << 8;
+		curr_value |= sw_uart_get8(&u) << 0;
 		//printk("RX: %d\n", curr_value);
-		sw_uart_put8(tx, (curr_value & 0xFF000000) >> 24, 6076);
+		sw_uart_put8(&u, (curr_value & 0xFF000000) >> 24);
 		//printk("TX1: %d\n", curr_value & 0xFF000000);
-		sw_uart_put8(tx, (curr_value & 0x00FF0000) >> 16, 6076);
+		sw_uart_put8(&u, (curr_value & 0x00FF0000) >> 16);
 		//printk("TX2: %d\n", curr_value & 0x00FF0000);
-		sw_uart_put8(tx, (curr_value & 0x0000FF00) >> 8, 6076);
+		sw_uart_put8(&u, (curr_value & 0x0000FF00) >> 8);
 		//printk("TX3: %d\n", curr_value & 0x0000FF00);
-		sw_uart_put8(tx, (curr_value & 0x000000FF) >> 0, 6076);
+		sw_uart_put8(&u, (curr_value & 0x000000FF) >> 0);
     }
 }
 
 void notmain(void) {
     int rx = 20;
     int tx = 21;
-    gpio_set_output(tx);
+    u = sw_uart_init(tx, rx, 115200);
+	gpio_set_output(tx);
     gpio_set_input(rx);
     enable_cache();
 	cycle_cnt_init();
