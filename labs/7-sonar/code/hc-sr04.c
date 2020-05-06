@@ -107,7 +107,8 @@ int hc_sr04_get_distance(hc_sr04_t *h, unsigned timeout_usec) {
 	gpio_set_on(h->trigger);
 	delay_us(10);
 	gpio_set_off(h->trigger);
-	read_while_eq(h->echo, 0, 200);
+	read_while_eq(h->echo, 0, 148);
 	int high_interval_us = read_while_eq(h->echo, 1, 55000);
-    return high_interval_us;
+    int distance_inches = (high_interval_us / 148); 
+	return distance_inches;
 }
