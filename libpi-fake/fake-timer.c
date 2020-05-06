@@ -11,7 +11,3 @@ void delay_ms(unsigned ms) {
 	fake_time_usec += 1;
 }
 
-unsigned timer_get_usec(void) {
-	trace("getting usec = %dusec\n", fake_time_usec);
-	return fake_time_usec;
-}
