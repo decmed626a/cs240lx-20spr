@@ -1,19 +1,64 @@
 #include "rpi.h"
 #include "hc-sr04.h"
 
+volatile unsigned *GPPUD = (void*) 0x20200094;
+volatile unsigned *GPPUDCLK0 = (void*) 0x20200098;
+volatile unsigned *GPPUDCLK1 = (void*) 0x2020009C;
+
+void gpio_set_pullup(unsigned pin) { 
+	dev_barrier();
+	put32(GPPUD, 0x2);
+	delay_us(150);
+	volatile unsigned* pud_clk_reg = 0;
+	if(pin <=31) {
+		pud_clk_reg = GPPUDCLK0;
+	} else {
+		pud_clk_reg = GPPUDCLK1;
+	}
+	unsigned pud_offset = pin & 0x1f;
+	put32(pud_clk_reg, (1 << pud_offset));
+	delay_us(150);
+	put32(GPPUD, 0);
+	delay_us(150);
+	put32(pud_clk_reg, 0);
+	delay_us(150);
+	dev_barrier();
+}
+void gpio_set_pulldown(unsigned pin) {
+	dev_barrier();
+	put32(GPPUD, 0x1);
+	delay_us(150);
+	volatile unsigned* pud_clk_reg = 0;
+	if(pin <=31) {
+		pud_clk_reg = GPPUDCLK0;
+	} else {
+		pud_clk_reg = GPPUDCLK1;
+	}
+	unsigned pud_offset = pin & 0x1f;
+	put32(pud_clk_reg, (1 << pud_offset));
+	delay_us(150);
+	put32(GPPUD, 0);
+	delay_us(150);
+	put32(pud_clk_reg, 0);
+	delay_us(150);
+	dev_barrier();
+}
+
+
+
 // gpio_read(pin) until either:
 //  1. gpio_read(pin) != v ==> return 1.
 //  2. <timeout> microseconds have passed ==> return 0
 int read_while_eq(int pin, int v, unsigned timeout) {
-	int start = timer_get_usec();
-	int curr = start;
-	while(((gpio_read(pin) >> pin) & 1) != v) {
+	unsigned start = timer_get_usec();
+	unsigned curr = 0;
+	while(((gpio_read(pin) >> pin)) == v) {
 		curr = timer_get_usec();
-		if((curr - start) > timeout) {
+		if(curr  > start + timeout) {
 			return 0;
 		}
 	}
-	return curr - start;
+	return (int) (curr - start);
 }
 
 // initialize:
@@ -36,9 +81,7 @@ hc_sr04_t hc_sr04_init(int trigger, int echo) {
     hc_sr04_t h = { .trigger = trigger, .echo = echo };
     gpio_set_output(trigger);
 	gpio_set_input(echo);
-	gpio_set_on(trigger);
-	delay_us(10);
-	gpio_set_off(trigger);
+	gpio_set_pulldown(echo);
 	return h;
 }
 
@@ -64,12 +107,7 @@ int hc_sr04_get_distance(hc_sr04_t *h, unsigned timeout_usec) {
 	gpio_set_on(h->trigger);
 	delay_us(10);
 	gpio_set_off(h->trigger);
-	delay_us(200);
-	delay_ms(60);
-	return -1;
-	
-	//timer_get_usec();
-	//read_while_eq(h->echo, 1, 250); 
-	//int high_interval_us = read_while_eq(h->echo, 0, 60000);
-    //return high_interval_us;
+	read_while_eq(h->echo, 0, 200);
+	int high_interval_us = read_while_eq(h->echo, 1, 55000);
+    return high_interval_us;
 }
