@@ -12,3 +12,4 @@ unsigned fake_time_inc(unsigned inc) {
 	fake_time_usec += inc;
 	return fake_time_usec;
 }
+
