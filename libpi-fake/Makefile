@@ -4,6 +4,11 @@ LPI = $(CS140E_PATH)/libpi/
 
 include low-level.mk
 
+ifndef LOW_LEVEL_PI_SOURCE
+$(error LOW_LEVEL_PI_SOURCE is not set: this should contain the absolute path to where this directory is.  Define it in your shell's initialiation.  For example, .tcshrc for tcsh or .bashrc for bash)
+endif
+
+
 HL_SOURCES :=  $(wildcard ./*.c) 
 LL_SOURCES := $(LOW_LEVEL_PI_SOURCE) $(wildcard ./*.c) 
 
@@ -20,8 +25,10 @@ endif
 LPI = $(CS140E_PATH)/libpi
 # where libunix is (currently)
 LUNIX = $(CS240LX_2021_PATH)/libunix/
+LIBPILX = $(CS240LX_2021_PATH)/liblxpi/
 
-VPATH := .:$(LPI):$(LPI)/cs140e-private:$(LPI)/libc:$(LPI)/cs140e-src:$(LPI)/cs140e-src:$(CS240LX_2021_PATH)/liblxpi/
+VPATH := .:$(LPI):$(LPI)/cs140e-private:$(LPI)/libc:$(LPI)/cs140e-src:$(LPI)/cs140e-src:$(LIBPILX)
+
 START= cs140e-start
 
 LL_OBJS := $(patsubst %.c, %.o, $(LL_SOURCES))
@@ -34,10 +41,10 @@ HL_OBJS := $(foreach o, $(HL_OBJS), $(BUILD_DIR)/$(notdir $o))
 
 CC=gcc
 CFLAGS = -Wall -g -Og -std=gnu99  -Werror -Wno-unused-function 
-CFLAGS += -I$(LPI) -I$(LUNIX) -DRPI_UNIX
+CFLAGS += -I$(LPI) -I$(LUNIX) -DRPI_UNIX -I$(LIBPILX)
 
 # overdepend: all .o's depend on all .h's  --- make deps as simple as possible.
-DEPS := $(wildcard ./*.h) $(LPI)/rpi.h Makefile 
+DEPS := $(wildcard ./*.h) $(LPI)/rpi.h Makefile  ./low-level.mk
 
 all: $(TARGET_HL) $(TARGET_LL)
 
