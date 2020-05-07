@@ -7,7 +7,7 @@ void delay_us(unsigned us) {
 }
 
 void delay_ms(unsigned ms) {
-	trace("delay_ms = %dmsec\n", ms);
-	fake_time_usec += 1;
+	trace("delay_ms = %dms\n", ms);
+	fake_time_usec += 1000 * ms;
 }
 

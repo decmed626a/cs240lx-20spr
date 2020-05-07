@@ -1,18 +1,18 @@
 #include "rpi.h"
 #include "hc-sr04.h"
 
-unsigned start = 0;
-
 // gpio_read(pin) until either:
 //  1. gpio_read(pin) != v ==> return 1.
 //  2. <timeout> microseconds have passed ==> return 0
 int read_while_eq(int pin, int v, unsigned timeout) {
+	unsigned start = timer_get_usec();
+	
 	while(1) {
-		if(gpio_read(pin) >> pin != v) {
+		if(gpio_read(pin) != v) {
 			return 1;
 		}
 		unsigned curr = timer_get_usec();
-		if(curr >= start + timeout) {
+		if(curr - start >= timeout) {
 			return 0;
 		}
 	}
@@ -66,11 +66,11 @@ int hc_sr04_get_distance(hc_sr04_t *h, unsigned timeout_usec) {
 	delay_us(10);
 	gpio_write(h->trigger, 0);
 	delay_us(148);
-	start = timer_get_usec();
 	int low_interval_us = read_while_eq(h->echo, 0, timeout_usec);
 	if(low_interval_us == 0) {
 		return -1;
 	}
+	unsigned start = timer_get_usec();
 	int high_interval_us = read_while_eq(h->echo, 1, timeout_usec);
 	if(high_interval_us == 0) {
 		return -1;

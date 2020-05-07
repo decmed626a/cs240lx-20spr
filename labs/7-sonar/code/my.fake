@@ -1,0 +1,557 @@
+TRACE:fake_random:random called=1 times, value=1804289383
+TRACE:uart_init:uart
+PI:starting sonar!
+TRACE:gpio_set_output:pin=20
+TRACE:gpio_write:pin=20, val=0
+TRACE:gpio_set_input:pin=21
+TRACE:gpio_set_pulldown:pin=21
+PI:sonar ready!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=2 times, value=846930886
+TRACE:timer_get_usec:getting usec = 1804330269usec
+TRACE:fake_random:random called=3 times, value=1681692777
+TRACE:timer_get_usec:getting usec = 1804343046usec
+TRACE:fake_random:random called=4 times, value=1714636915
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=5 times, value=1957747793
+TRACE:timer_get_usec:getting usec = 1804420839usec
+TRACE:fake_random:random called=6 times, value=424238335
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=7 times, value=719885386
+TRACE:timer_get_usec:getting usec = 1804466225usec
+TRACE:fake_random:random called=8 times, value=1649760492
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=9 times, value=596516649
+TRACE:timer_get_usec:getting usec = 1804562874usec
+PI:distance = 1571 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=10 times, value=1189641421
+TRACE:timer_get_usec:getting usec = 1804664295usec
+TRACE:fake_random:random called=11 times, value=1025202362
+TRACE:timer_get_usec:getting usec = 1804666657usec
+TRACE:fake_random:random called=12 times, value=1350490027
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=13 times, value=783368690
+TRACE:timer_get_usec:getting usec = 1804725347usec
+TRACE:fake_random:random called=14 times, value=1102520059
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=15 times, value=2044897763
+TRACE:timer_get_usec:getting usec = 1804833110usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=16 times, value=1967513926
+TRACE:timer_get_usec:getting usec = 1804887036usec
+TRACE:fake_random:random called=17 times, value=1365180540
+TRACE:timer_get_usec:getting usec = 1804967576usec
+TRACE:fake_random:random called=18 times, value=1540383426
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=19 times, value=304089172
+TRACE:timer_get_usec:getting usec = 1805016748usec
+TRACE:fake_random:random called=20 times, value=1303455736
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=21 times, value=35005211
+TRACE:timer_get_usec:getting usec = 1805041959usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=22 times, value=521595368
+TRACE:timer_get_usec:getting usec = 1805127327usec
+TRACE:fake_random:random called=23 times, value=294702567
+TRACE:timer_get_usec:getting usec = 1805139894usec
+TRACE:fake_random:random called=24 times, value=1726956429
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=25 times, value=336465782
+TRACE:timer_get_usec:getting usec = 1805225676usec
+TRACE:fake_random:random called=26 times, value=861021530
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=27 times, value=278722862
+TRACE:timer_get_usec:getting usec = 1805318538usec
+PI:distance = 1291 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=28 times, value=233665123
+TRACE:timer_get_usec:getting usec = 1805343661usec
+TRACE:fake_random:random called=29 times, value=2145174067
+TRACE:timer_get_usec:getting usec = 1805407728usec
+TRACE:fake_random:random called=30 times, value=468703135
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=31 times, value=1101513929
+TRACE:timer_get_usec:getting usec = 1805491657usec
+TRACE:fake_random:random called=32 times, value=1801979802
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=33 times, value=1315634022
+TRACE:timer_get_usec:getting usec = 1805525679usec
+PI:distance = 1229 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=34 times, value=635723058
+TRACE:timer_get_usec:getting usec = 1805558737usec
+TRACE:fake_random:random called=35 times, value=1369133069
+TRACE:timer_get_usec:getting usec = 1805631806usec
+TRACE:fake_random:random called=36 times, value=1125898167
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=37 times, value=1059961393
+TRACE:timer_get_usec:getting usec = 1805633199usec
+TRACE:fake_random:random called=38 times, value=2089018456
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=39 times, value=628175011
+TRACE:timer_get_usec:getting usec = 1805708210usec
+PI:distance = 1009 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=40 times, value=1656478042
+TRACE:timer_get_usec:getting usec = 1805806252usec
+TRACE:fake_random:random called=41 times, value=1131176229
+TRACE:timer_get_usec:getting usec = 1805852481usec
+TRACE:fake_random:random called=42 times, value=1653377373
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=43 times, value=859484421
+TRACE:timer_get_usec:getting usec = 1805906902usec
+TRACE:fake_random:random called=44 times, value=1914544919
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=45 times, value=608413784
+TRACE:timer_get_usec:getting usec = 1805910686usec
+TRACE:fake_random:random called=46 times, value=756898537
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=47 times, value=1734575198
+TRACE:timer_get_usec:getting usec = 1806005884usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=48 times, value=1973594324
+TRACE:timer_get_usec:getting usec = 1806090208usec
+TRACE:fake_random:random called=49 times, value=149798315
+TRACE:timer_get_usec:getting usec = 1806178523usec
+TRACE:fake_random:random called=50 times, value=2038664370
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=51 times, value=1129566413
+TRACE:timer_get_usec:getting usec = 1806264936usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=52 times, value=184803526
+TRACE:timer_get_usec:getting usec = 1806268462usec
+TRACE:fake_random:random called=53 times, value=412776091
+TRACE:timer_get_usec:getting usec = 1806324553usec
+TRACE:fake_random:random called=54 times, value=1424268980
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=55 times, value=1911759956
+TRACE:timer_get_usec:getting usec = 1806394509usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=56 times, value=749241873
+TRACE:timer_get_usec:getting usec = 1806426382usec
+TRACE:fake_random:random called=57 times, value=137806862
+TRACE:timer_get_usec:getting usec = 1806513244usec
+TRACE:fake_random:random called=58 times, value=42999170
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=59 times, value=982906996
+TRACE:timer_get_usec:getting usec = 1806570240usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=60 times, value=135497281
+TRACE:timer_get_usec:getting usec = 1806657521usec
+TRACE:fake_random:random called=61 times, value=511702305
+TRACE:timer_get_usec:getting usec = 1806749826usec
+TRACE:fake_random:random called=62 times, value=2084420925
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=63 times, value=1937477084
+TRACE:timer_get_usec:getting usec = 1806796910usec
+TRACE:fake_random:random called=64 times, value=1827336327
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=65 times, value=572660336
+TRACE:timer_get_usec:getting usec = 1806797246usec
+TRACE:fake_random:random called=66 times, value=1159126505
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=67 times, value=805750846
+TRACE:timer_get_usec:getting usec = 1806798092usec
+TRACE:fake_random:random called=68 times, value=1632621729
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=69 times, value=1100661313
+TRACE:timer_get_usec:getting usec = 1806799405usec
+TRACE:fake_random:random called=70 times, value=1433925857
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=71 times, value=1141616124
+TRACE:timer_get_usec:getting usec = 1806835529usec
+TRACE:fake_random:random called=72 times, value=84353895
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=73 times, value=939819582
+TRACE:timer_get_usec:getting usec = 1806925111usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=74 times, value=2001100545
+TRACE:timer_get_usec:getting usec = 1807015656usec
+TRACE:fake_random:random called=75 times, value=1998898814
+TRACE:timer_get_usec:getting usec = 1807104470usec
+TRACE:fake_random:random called=76 times, value=1548233367
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=77 times, value=610515434
+TRACE:timer_get_usec:getting usec = 1807119904usec
+TRACE:fake_random:random called=78 times, value=1585990364
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=79 times, value=1374344043
+TRACE:timer_get_usec:getting usec = 1807123947usec
+PI:distance = 731 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=80 times, value=760313750
+TRACE:timer_get_usec:getting usec = 1807227697usec
+TRACE:fake_random:random called=81 times, value=1477171087
+TRACE:timer_get_usec:getting usec = 1807318784usec
+TRACE:fake_random:random called=82 times, value=356426808
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=83 times, value=945117276
+TRACE:timer_get_usec:getting usec = 1807426060usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=84 times, value=1889947178
+TRACE:timer_get_usec:getting usec = 1807463238usec
+TRACE:fake_random:random called=85 times, value=1780695788
+TRACE:timer_get_usec:getting usec = 1807479026usec
+TRACE:fake_random:random called=86 times, value=709393584
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=87 times, value=491705403
+TRACE:timer_get_usec:getting usec = 1807484429usec
+TRACE:fake_random:random called=88 times, value=1918502651
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=89 times, value=752392754
+TRACE:timer_get_usec:getting usec = 1807587183usec
+TRACE:fake_random:random called=90 times, value=1474612399
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=91 times, value=2053999932
+TRACE:timer_get_usec:getting usec = 1807667115usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=92 times, value=1264095060
+TRACE:timer_get_usec:getting usec = 1807752175usec
+TRACE:fake_random:random called=93 times, value=1411549676
+TRACE:timer_get_usec:getting usec = 1807781851usec
+TRACE:fake_random:random called=94 times, value=1843993368
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=95 times, value=943947739
+TRACE:timer_get_usec:getting usec = 1807819590usec
+TRACE:fake_random:random called=96 times, value=1984210012
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=97 times, value=855636226
+TRACE:timer_get_usec:getting usec = 1807875816usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=98 times, value=1749698586
+TRACE:timer_get_usec:getting usec = 1807914402usec
+TRACE:fake_random:random called=99 times, value=1469348094
+TRACE:timer_get_usec:getting usec = 1807992496usec
+TRACE:fake_random:random called=100 times, value=1956297539
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=101 times, value=1036140795
+TRACE:timer_get_usec:getting usec = 1808043291usec
+TRACE:fake_random:random called=102 times, value=463480570
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=103 times, value=2040651434
+TRACE:timer_get_usec:getting usec = 1808084725usec
+PI:distance = 1150 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=104 times, value=1975960378
+TRACE:timer_get_usec:getting usec = 1808115103usec
+TRACE:fake_random:random called=105 times, value=317097467
+TRACE:timer_get_usec:getting usec = 1808192570usec
+TRACE:fake_random:random called=106 times, value=1892066601
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=107 times, value=1376710097
+TRACE:timer_get_usec:getting usec = 1808252667usec
+TRACE:fake_random:random called=108 times, value=927612902
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=109 times, value=1330573317
+TRACE:timer_get_usec:getting usec = 1808265984usec
+PI:distance = 1019 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=110 times, value=603570492
+TRACE:timer_get_usec:getting usec = 1808266476usec
+TRACE:fake_random:random called=111 times, value=1687926652
+TRACE:timer_get_usec:getting usec = 1808353128usec
+TRACE:fake_random:random called=112 times, value=660260756
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=113 times, value=959997301
+TRACE:timer_get_usec:getting usec = 1808380429usec
+TRACE:fake_random:random called=114 times, value=485560280
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=115 times, value=402724286
+TRACE:timer_get_usec:getting usec = 1808394715usec
+TRACE:fake_random:random called=116 times, value=593209441
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=117 times, value=1194953865
+TRACE:timer_get_usec:getting usec = 1808418580usec
+TRACE:fake_random:random called=118 times, value=894429689
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=119 times, value=364228444
+TRACE:timer_get_usec:getting usec = 1808437024usec
+TRACE:fake_random:random called=120 times, value=1947346619
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=121 times, value=221558440
+TRACE:timer_get_usec:getting usec = 1808455464usec
+TRACE:fake_random:random called=122 times, value=270744729
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=123 times, value=1063958031
+TRACE:timer_get_usec:getting usec = 1808493495usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=124 times, value=1633108117
+TRACE:timer_get_usec:getting usec = 1808541612usec
+TRACE:fake_random:random called=125 times, value=2114738097
+TRACE:timer_get_usec:getting usec = 1808639709usec
+TRACE:fake_random:random called=126 times, value=2007905771
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=127 times, value=1469834481
+TRACE:timer_get_usec:getting usec = 1808654190usec
+TRACE:fake_random:random called=128 times, value=822890675
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=129 times, value=1610120709
+TRACE:timer_get_usec:getting usec = 1808704899usec
+TRACE:fake_random:random called=130 times, value=791698927
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=131 times, value=631704567
+TRACE:timer_get_usec:getting usec = 1808789466usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=132 times, value=498777856
+TRACE:timer_get_usec:getting usec = 1808827322usec
+TRACE:fake_random:random called=133 times, value=1255179497
+TRACE:timer_get_usec:getting usec = 1808906819usec
+TRACE:fake_random:random called=134 times, value=524872353
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=135 times, value=327254586
+TRACE:timer_get_usec:getting usec = 1808911405usec
+TRACE:fake_random:random called=136 times, value=1572276965
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=137 times, value=269455306
+TRACE:timer_get_usec:getting usec = 1808976711usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=138 times, value=1703964683
+TRACE:timer_get_usec:getting usec = 1809041394usec
+TRACE:fake_random:random called=139 times, value=352406219
+TRACE:timer_get_usec:getting usec = 1809117613usec
+TRACE:fake_random:random called=140 times, value=1600028624
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=141 times, value=160051528
+TRACE:timer_get_usec:getting usec = 1809119141usec
+TRACE:fake_random:random called=142 times, value=2040332871
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=143 times, value=112805732
+TRACE:timer_get_usec:getting usec = 1809174873usec
+TRACE:fake_random:random called=144 times, value=1120048829
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=145 times, value=378409503
+TRACE:timer_get_usec:getting usec = 1809184376usec
+TRACE:fake_random:random called=146 times, value=515530019
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=147 times, value=1713258270
+TRACE:timer_get_usec:getting usec = 1809192646usec
+TRACE:fake_random:random called=148 times, value=1573363368
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=149 times, value=1409959708
+TRACE:timer_get_usec:getting usec = 1809282354usec
+PI:distance = 1628 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=150 times, value=2077486715
+TRACE:timer_get_usec:getting usec = 1809309069usec
+TRACE:fake_random:random called=151 times, value=1373226340
+TRACE:timer_get_usec:getting usec = 1809405409usec
+TRACE:fake_random:random called=152 times, value=1631518149
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=153 times, value=200747796
+TRACE:timer_get_usec:getting usec = 1809513205usec
+TRACE:fake_random:random called=154 times, value=289700723
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=155 times, value=1117142618
+TRACE:timer_get_usec:getting usec = 1809605823usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=156 times, value=168002245
+TRACE:timer_get_usec:getting usec = 1809638068usec
+TRACE:fake_random:random called=157 times, value=150122846
+TRACE:timer_get_usec:getting usec = 1809720914usec
+TRACE:fake_random:random called=158 times, value=439493451
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=159 times, value=990892921
+TRACE:timer_get_usec:getting usec = 1809733835usec
+TRACE:fake_random:random called=160 times, value=1760243555
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=161 times, value=1231192379
+TRACE:timer_get_usec:getting usec = 1809806214usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=162 times, value=1622597488
+TRACE:timer_get_usec:getting usec = 1809903702usec
+TRACE:fake_random:random called=163 times, value=111537764
+TRACE:timer_get_usec:getting usec = 1810011466usec
+TRACE:fake_random:random called=164 times, value=338888228
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=165 times, value=2147469841
+TRACE:timer_get_usec:getting usec = 1810061307usec
+TRACE:fake_random:random called=166 times, value=438792350
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=167 times, value=1911165193
+TRACE:timer_get_usec:getting usec = 1810086500usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=168 times, value=269441500
+TRACE:timer_get_usec:getting usec = 1810138000usec
+TRACE:fake_random:random called=169 times, value=2142757034
+TRACE:timer_get_usec:getting usec = 1810205034usec
+TRACE:fake_random:random called=170 times, value=116087764
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=171 times, value=1869470124
+TRACE:timer_get_usec:getting usec = 1810225158usec
+TRACE:fake_random:random called=172 times, value=155324914
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=173 times, value=8936987
+TRACE:timer_get_usec:getting usec = 1810252145usec
+TRACE:fake_random:random called=174 times, value=1982275856
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=175 times, value=1275373743
+TRACE:timer_get_usec:getting usec = 1810285888usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=176 times, value=387346491
+TRACE:timer_get_usec:getting usec = 1810322379usec
+TRACE:fake_random:random called=177 times, value=350322227
+TRACE:timer_get_usec:getting usec = 1810404606usec
+TRACE:fake_random:random called=178 times, value=841148365
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=179 times, value=1960709859
+TRACE:timer_get_usec:getting usec = 1810474465usec
+TRACE:fake_random:random called=180 times, value=1760281936
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=181 times, value=771151432
+TRACE:timer_get_usec:getting usec = 1810525897usec
+PI:distance = 1375 inches
+TRACE:delay_us:delay_us = 1000000usec
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=182 times, value=1186452551
+TRACE:timer_get_usec:getting usec = 1810628448usec
+TRACE:fake_random:random called=183 times, value=1244316437
+TRACE:timer_get_usec:getting usec = 1810734885usec
+TRACE:fake_random:random called=184 times, value=971899228
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=185 times, value=1476153275
+TRACE:timer_get_usec:getting usec = 1810798160usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=186 times, value=213975407
+TRACE:timer_get_usec:getting usec = 1810823567usec
+TRACE:fake_random:random called=187 times, value=1139901474
+TRACE:timer_get_usec:getting usec = 1810905041usec
+TRACE:fake_random:random called=188 times, value=1626276121
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=189 times, value=653468858
+TRACE:timer_get_usec:getting usec = 1810973899usec
+TRACE:fake_random:random called=190 times, value=2130794395
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=191 times, value=1239036029
+TRACE:timer_get_usec:getting usec = 1811079928usec
+PI:timeout!
+TRACE:gpio_write:pin=20, val=1
+TRACE:delay_us:delay_us = 10usec
+TRACE:gpio_write:pin=20, val=0
+TRACE:delay_us:delay_us = 148usec
+TRACE:fake_random:random called=192 times, value=1884661237
+TRACE:timer_get_usec:getting usec = 1811111165usec
+TRACE:fake_random:random called=193 times, value=1605908235
+TRACE:timer_get_usec:getting usec = 1811129400usec
+TRACE:fake_random:random called=194 times, value=1350573793
+TRACE:gpio_read:pin=21, returning=1
+TRACE:fake_random:random called=195 times, value=76065818
+TRACE:timer_get_usec:getting usec = 1811185218usec
+TRACE:fake_random:random called=196 times, value=1605894428
+TRACE:gpio_read:pin=21, returning=0
+TRACE:fake_random:random called=197 times, value=1789366143
+TRACE:timer_get_usec:getting usec = 1811291361usec
+PI:distance = 1217 inches
+TRACE:delay_us:delay_us = 1000000usec
+PI:stopping sonar !
+TRACE:clean_reboot:clean reboot

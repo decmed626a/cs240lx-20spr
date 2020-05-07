@@ -27,7 +27,7 @@ void gpio_write(unsigned pin, unsigned val) {
 }
 
 int gpio_read(unsigned pin) {
-	unsigned val = fake_random();
-	trace("pin=%d, returning %d\n", pin, val);
+	int val = fake_random() % 2;
+	trace("pin=%d, returning=%d\n", pin, val);
 	return val;
 }
