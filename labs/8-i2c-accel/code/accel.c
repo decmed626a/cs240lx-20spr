@@ -169,7 +169,7 @@ accel_t accel_init(uint8_t addr, lsm6ds33_g_t g, lsm6ds33_hz_t hz) {
 	imu_wr(addr, CTRL1_XL, (1 << 6) | (1 << 5));
 
 	// Populate acclerometer struct
-	accel_t accel_struct = {.addr=addr, .g=g, .hz=hz};
+	accel_t accel_struct = {.addr=addr, .g=g_scale, .hz=hz};
 
 	// Delay to get values out
 	delay_ms(20);
