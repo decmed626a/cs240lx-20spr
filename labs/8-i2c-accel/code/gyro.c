@@ -81,17 +81,17 @@ static int mdps_raw(uint8_t hi, uint8_t lo) {
 
 // returns m degree per sec
 static int mdps_scaled(int v, int dps_scale) {
-    unimplemented();
+	return (dps_scale * v) / 1000;
 }
 
 
 // see p 15 of the datasheet.  confusing we have to do this.
 unsigned dps_to_scale(unsigned fs) {
     switch(fs) {
-    case 245: unimplemented();
-    case 500: unimplemented();
-    case 1000: unimplemented();
-    case 2000: unimplemented();
+    case 245: return 8750;
+    case 500: return 17500;
+    case 1000: return 35000;
+    case 2000: return 70000;
     default: assert(0);
     }
 }
@@ -126,11 +126,13 @@ gyro_t init_gyro(uint8_t addr, lsm6ds33_dps_t dps, lsm6ds33_hz_t hz) {
 	// Set CTRL1_XL (p. 46)
 	imu_wr(addr, CTRL2_G, (1 << 6) | (1 << 5));
 
-	gyro_t gyro_struct = {.addr=addr, .hz=hz, .dps=dps, .scale=0};
+	gyro_t gyro_struct = {.addr=addr, .hz=hz, .dps=dps, .scale=dps_to_scale(245)};
 
 	delay_ms(80);
 
     dev_barrier();
+
+	return gyro_struct;
 }
 
 // if GDA of status reg (bit offset = 1) is 1 then there is data.
