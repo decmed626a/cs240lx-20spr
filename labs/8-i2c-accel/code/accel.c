@@ -56,12 +56,14 @@ int imu_rd_n(uint8_t addr, uint8_t base_reg, uint8_t *v, uint32_t n) {
 
 // returns the raw value from the sensor.
 static short mg_raw(uint8_t hi, uint8_t lo) {
-    unimplemented();
+	short combo_mg = (hi << 8) | lo;
+	return combo_mg;
 }
 // returns milligauss, integer
-static int mg_scaled(int v, int mg_scale) {
-    unimplemented();
+static int mg_scaled(int mg_scale, int v) {
+	return (v *  mg_scale * 1000) / SHRT_MAX;
 }
+
 
 static void test_mg(int expected, uint8_t h, uint8_t l, unsigned g) {
     int s_i = mg_scaled(mg_raw(h,l),g);
@@ -83,7 +85,14 @@ imu_xyz_t accel_scale(accel_t *h, imu_xyz_t xyz) {
 }
 
 int accel_has_data(accel_t *h) {
-    unimplemented();
+    // read from bit 1 of STATUS_REG to see if
+	// accelerometer is available, p.56 of datasheet
+	unsigned stat_val = imu_rd(h->addr, STATUS_REG) & 1;
+	if(stat_val != 0) {
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 // block until there is data and then return it (raw)
@@ -100,7 +109,22 @@ imu_xyz_t accel_rd(accel_t *h) {
 
     unsigned mg_scale = h->g;
     uint8_t addr = h->addr;
-    unimplemented();
+	while(!accel_has_data(h)) {;}
+
+	uint8_t vals[6];
+
+	imu_rd_n(h->addr, OUTX_L_XL, vals, 6);
+
+	int x = mg_raw(vals[1], vals[0]);
+	int y = mg_raw(vals[3], vals[2]);
+	int z = mg_raw(vals[5], vals[4]);
+
+	printk("x: %d\n", x);
+	printk("y: %d\n", y);
+	printk("z: %d\n", z);
+
+	imu_xyz_t accel_data = {.x=x, .y=y, .z=z};
+	return accel_data;
 }
 
 // first do the cookbook from the data sheet.
@@ -134,22 +158,21 @@ accel_t accel_init(uint8_t addr, lsm6ds33_g_t g, lsm6ds33_hz_t hz) {
 
 	// Enable X, Y, and Z output in register CTRL9_XL
 	// Put in p. 53 of the datasheet
-	PUT8(CTRL9_XL, (1 << 3) | (1 << 4) | (1 << 5));
+	imu_wr(addr, CTRL9_XL, (1 << 3) | (1 << 4) | (1 << 5));
 
 	// Enable BDU in register CTRL3_C (p. 49 of datasheet)
 	// Also need IF_INC enabled of same register
-	PUT8(CTRL3_C, (1 << 6) | (1 << 2)) ;
+	imu_wr(addr, CTRL3_C, (1 << 6) | (1 << 2));
 
 	// Set to high performance mode, 416Hz
 	// Set CTRL1_XL (p. 46)
-	PUT8(CTRL1_XL, (1 << 6) | (1 << 5));
+	imu_wr(addr, CTRL1_XL, (1 << 6) | (1 << 5));
 
 	// Populate acclerometer struct
 	accel_t accel_struct = {.addr=addr, .g=g, .hz=hz};
 
 	// Delay to get values out
-	delay_ms(10);
-
+	delay_ms(20);
 
 	dev_barrier();
 
