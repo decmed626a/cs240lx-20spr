@@ -132,7 +132,28 @@ accel_t accel_init(uint8_t addr, lsm6ds33_g_t g, lsm6ds33_hz_t hz) {
     unsigned g_bits = g&0xff;
     assert(legal_g_bits(g_bits));
 
-    unimplemented();
+	// Enable X, Y, and Z output in register CTRL9_XL
+	// Put in p. 53 of the datasheet
+	PUT8(CTRL9_XL, (1 << 3) | (1 << 4) | (1 << 5));
+
+	// Enable BDU in register CTRL3_C (p. 49 of datasheet)
+	// Also need IF_INC enabled of same register
+	PUT8(CTRL3_C, (1 << 6) | (1 << 2)) ;
+
+	// Set to high performance mode, 416Hz
+	// Set CTRL1_XL (p. 46)
+	PUT8(CTRL1_XL, (1 << 6) | (1 << 5));
+
+	// Populate acclerometer struct
+	accel_t accel_struct = {.addr=addr, .g=g, .hz=hz};
+
+	// Delay to get values out
+	delay_ms(10);
+
+
+	dev_barrier();
+
+	return accel_struct;
 }
 
 

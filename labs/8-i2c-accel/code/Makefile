@@ -19,7 +19,7 @@ DEPS := $(MEMMAP) $(LPI) $(wildcard ./*.h) ./Makefile
 all: libpi $(OBJS) $(NAME).bin run.first
 
 run.first:
-	my-install /dev/ttyUSB0 ./$(NAME).bin
+	my-install /dev/cu.SLAB_USBtoUART ./$(NAME).bin
 run.last:
 	my-install /dev/ttyUSB1 ./$(NAME).bin
     
@@ -42,7 +42,7 @@ $(OBJS): $(DEPS)
 	$(OCP) $*.elf -O binary $*.bin
 
 run:
-	my-install /dev/ttyUSB0 ./$(NAME).bin
+	my-install /dev/cu.SLAB_USBTOUART ./$(NAME).bin
 
 tags: 
 	ctags *.[chSs] $(LPP)/*.[ch] $(LPP)/*.[chSs]
