@@ -118,13 +118,15 @@ gyro_t init_gyro(uint8_t addr, lsm6ds33_dps_t dps, lsm6ds33_hz_t hz) {
 	// Put in p. 53 of the datasheet
 	imu_wr(addr, CTRL10_C, (1 << 3) | (1 << 4) | (1 << 5));
 
-		// Enable BDU in register CTRL3_C (p. 49 of datasheet)
+	delay_ms(80);
+	
+	// Enable BDU in register CTRL3_C (p. 49 of datasheet)
 	// Also need IF_INC enabled of same register
 	imu_wr(addr, CTRL3_C, (1 << 6) | (1 << 2));
 
 	// Set to high performance mode, 416Hz
 	// Set CTRL1_XL (p. 46)
-	imu_wr(addr, CTRL2_G, (1 << 6) | (1 << 5));
+	imu_wr(addr, CTRL2_G, (hz << 4) | (dps << 2));
 
 	gyro_t gyro_struct = {.addr=addr, .hz=hz, .dps=dps, .scale=dps_to_scale(245)};
 
