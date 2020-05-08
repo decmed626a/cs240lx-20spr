@@ -200,7 +200,7 @@ void notmain() {
 	enable_cache();
     cycle_cnt_init();
     //system_enable_interrupts();
-    client(tx, rx, 255);
+    client(tx, rx, 254);
 
     // starter code.
     // make sure this works first, then try to measure the overheads.

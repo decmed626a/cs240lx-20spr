@@ -211,7 +211,7 @@ void notmain() {
 
 	enable_cache();
     cycle_cnt_init();
-    server(tx, rx, 255);
+    server(tx, rx, 254);
 
     // starter code.
     // make sure this works first, then try to measure the overheads.

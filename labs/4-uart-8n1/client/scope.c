@@ -102,17 +102,10 @@ sw_uart_get8(my_sw_uart_t* uart) {
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 7) + half_delay) {}
     output |= (((*GPLEV0 & (1 << uart->rx)) >> uart->rx) & 1) << 7;
     while(cycle_cnt_read() - start < uart->cycle_per_bit * (i + 8) + half_delay) {}
-    /*
-    output = (bit7 & 1) | \
-             (bit6 & 1) << 1 | \
-             (bit5 & 1) << 2 | \
-             (bit4 & 1) << 3 | \
-             (bit3 & 1) << 4 | \
-             (bit2 & 1) << 5 | \
-             (bit1 & 1) << 6 | \
-             (bit0 & 1) << 7;
-    */
-    return output;
+   
+	// sit and spin until the edge goes high, but needs timeout
+	
+	return output;
 }
 
 // send N samples at <ncycle> cycles each in a simple way.
