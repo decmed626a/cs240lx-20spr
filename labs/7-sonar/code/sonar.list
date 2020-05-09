@@ -1584,22 +1584,22 @@ Disassembly of section .debug_info:
       a8:	0b020000 	bleq	800b0 <__bss_end__+0x768b0>
       ac:	00000084 	andeq	r0, r0, r4, lsl #1
       b0:	0000f109 	andeq	pc, r0, r9, lsl #2
-      b4:	10230100 	eorne	r0, r3, r0, lsl #2
+      b4:	10290100 	eorne	r0, r9, r0, lsl #2
       b8:	a0000080 	andge	r0, r0, r0, lsl #1
       bc:	01000000 	mrseq	r0, (UNDEF: 0)
       c0:	0001c39c 	muleq	r1, ip, r3
       c4:	00680a00 	rsbeq	r0, r8, r0, lsl #20
-      c8:	00a52801 	adceq	r2, r5, r1, lsl #16
+      c8:	00a52e01 	adceq	r2, r5, r1, lsl #28
       cc:	91020000 	mrsls	r0, (UNDEF: 2)
       d0:	803c0b60 	eorshi	r0, ip, r0, ror #22
       d4:	00500000 	subseq	r0, r0, r0
       d8:	014d0000 	mrseq	r0, (UNDEF: 77)
       dc:	c70c0000 	strgt	r0, [ip, -r0]
       e0:	01000000 	mrseq	r0, (UNDEF: 0)
-      e4:	0000252b 	andeq	r2, r0, fp, lsr #10
+      e4:	00002531 	andeq	r2, r0, r1, lsr r5
       e8:	00000000 	andeq	r0, r0, r0
       ec:	00690d00 	rsbeq	r0, r9, r0, lsl #26
-      f0:	00252b01 	eoreq	r2, r5, r1, lsl #22
+      f0:	00253101 	eoreq	r3, r5, r1, lsl #2
       f4:	00340000 	eorseq	r0, r4, r0
       f8:	5c0e0000 	stcpl	0, cr0, [lr], {-0}
       fc:	d5000080 	strle	r0, [r0, #-128]	; 0x80
@@ -6465,7 +6465,7 @@ Disassembly of section .debug_line:
   7c:	00010068 	andeq	r0, r1, r8, rrx
   80:	05000000 	streq	r0, [r0, #-0]
   84:	00801002 	addeq	r1, r0, r2
-  88:	01220300 	teqeq	r2, r0, lsl #6
+  88:	01280300 	teqeq	r8, r0, lsl #6
   8c:	834b304c 	movthi	r3, #45132	; 0xb04c
   90:	2f2f304c 	svccs	0x002f304c
   94:	2e7a0330 	mrccs	3, 3, r0, cr10, cr0, {1}

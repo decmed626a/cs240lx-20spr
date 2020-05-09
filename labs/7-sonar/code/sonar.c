@@ -13,8 +13,13 @@ static unsigned timeout = 55000;
     // returns 1 if it decided on a value for <val>.  otherwise 0.
     int mem_model_get32(const volatile void *addr, uint32_t *val) {
         // TODO: mem model should check if timer address; like timer_get_usec
-		unimplemented();
-    }
+    	if(addr == (void*) 0x20003004) {
+			*val = fake_time_inc(fake_random() % (timeout * 2));
+			return 1;
+		} else {
+			return 0;
+		}
+	}
 
 #   elif defined (FAKE_HIGH_LEVEL)
 
