@@ -227,17 +227,17 @@ int i2c_read(unsigned addr, uint8_t data[], unsigned nbytes) {
 	curr_c.read = 1;
 	curr_c.clear = 0b11;
 	put32_T(i2c->control, curr_c);
+	
 	// Wait for transfer to start
-	//while(1 != read_s(&i2c->status).ta) {;}
+	while(1 != read_s(&i2c->status).ta) {;}
 
 	for(int i = 0; i < nbytes; i++) {
-		while(read_s(&i2c->status).txd != 1) {;}
+		while(read_s(&i2c->status).rxd != 1) {;}
 		data[i] = get32(&i2c->fifo) & 0xFF;	
 	}
 
 	// wait for current xfer to complete
     while(1 != read_s(&i2c->status).done) {;}
-
 
     dev_barrier();
 	return 1;
