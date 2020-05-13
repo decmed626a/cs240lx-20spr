@@ -31,7 +31,6 @@ void adc_reset(void) {
 static void adc_write16(uint8_t dev_addr, uint8_t reg, uint16_t v) {
 	uint8_t write_data[3] = {reg, v >> 8, v & 0x00FF};
 	i2c_write(dev_addr, write_data, 3);
-
 	uint8_t read_data[2] = {0, 0};
 	i2c_read(dev_addr, read_data, 2);
 }
@@ -42,8 +41,6 @@ static uint16_t adc_read16(uint8_t dev_addr, uint8_t reg) {
 	i2c_write(dev_addr, write_data, 1);
 	uint8_t read_data[2] = {0, 0};
 	i2c_read(dev_addr, read_data, 2);
-	printk("1st byte: %d\n", read_data[0]);
-	printk("2nd byte: %d\n", read_data[1]);
 	uint16_t out = ((read_data[0] << 8) | read_data[1]);
 	return out;
 }
@@ -98,7 +95,7 @@ void notmain(void) {
     //  - DR to 860sps
     // see page 28.
 	uint16_t config_val = 0;
-	config_val = 0b000 << 12 |  // Set AIN0 and AIN1 for diff input
+	config_val = 0b100 << 12 |  // Set AIN0 and AIN1 for diff input
 				 0b001 << 9 |   // Set PGA to +/- 4.096V
 				 0b0 << 8 |		// Set to continuous convesion mode 
 				 0b111 << 5 |   // Set to 860 sps
@@ -108,12 +105,11 @@ void notmain(void) {
 				 0b11;			// Disable comparator
 
 	adc_write16(dev_addr, config_reg, config_val); 
-
     // 4. read back the config and make sure the fields we set
     // are correct.
 	uint16_t rxed_config = adc_read16(dev_addr, config_reg); 
-
-    // 5. just loop and get readings.
+	assert( rxed_config == 0x42e3);
+	// 5. just loop and get readings.
     //  - vary your potentiometer
     //  - should get negative readings for low
     //  - around 20k for high.
