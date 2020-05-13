@@ -29,12 +29,23 @@ void adc_reset(void) {
 //  1. write to the low two bits in the address pointer register. (p27)
 //  2. read the 2 bytes that come back.
 static void adc_write16(uint8_t dev_addr, uint8_t reg, uint16_t v) {
-    unimplemented();
+	uint8_t write_data[3] = {reg, v >> 8, v & 0x00FF};
+	i2c_write(dev_addr, write_data, 3);
+
+	uint8_t read_data[2] = {0, 0};
+	i2c_read(dev_addr, read_data, 2);
 }
 
 // read a 16-bit register
 static uint16_t adc_read16(uint8_t dev_addr, uint8_t reg) {
-    unimplemented();
+	uint8_t write_data[1] = {reg};
+	i2c_write(dev_addr, write_data, 1);
+	uint8_t read_data[2] = {0, 0};
+	i2c_read(dev_addr, read_data, 2);
+	printk("1st byte: %d\n", read_data[0]);
+	printk("2nd byte: %d\n", read_data[1]);
+	uint16_t out = ((read_data[0] << 8) | read_data[1]);
+	return out;
 }
 
 void notmain(void) {
@@ -43,14 +54,15 @@ void notmain(void) {
 	i2c_init();
 	delay_ms(30);   // allow time to settle after init.
 
-    unimplemented();
+    //unimplemented();
 
     // 0. set these enums to the right values.
 
     // dev address: p23
-    enum { dev_addr = ?? };
+	// attached ADDR pin to GND
+    enum { dev_addr = 0x48 };
     // p27: register names
-    enum { conversion_reg = ??, config_reg = ?? };
+    enum { conversion_reg = 0x00, config_reg = 0x01 };
 
     // p28
     // one way to set fields in a register.
@@ -85,11 +97,21 @@ void notmain(void) {
     //  - MODE to continuous.
     //  - DR to 860sps
     // see page 28.
-    unimplemented();
+	uint16_t config_val = 0;
+	config_val = 0b000 << 12 |  // Set AIN0 and AIN1 for diff input
+				 0b001 << 9 |   // Set PGA to +/- 4.096V
+				 0b0 << 8 |		// Set to continuous convesion mode 
+				 0b111 << 5 |   // Set to 860 sps
+				 0b0 << 4 | 	// Use traditional comparator
+				 0b0 << 3 |		// Set active low polarity
+				 0b0 << 2 |		// Set nonlatching comparator
+				 0b11;			// Disable comparator
+
+	adc_write16(dev_addr, config_reg, config_val); 
 
     // 4. read back the config and make sure the fields we set
     // are correct.
-    unimplemented();
+	uint16_t rxed_config = adc_read16(dev_addr, config_reg); 
 
     // 5. just loop and get readings.
     //  - vary your potentiometer
