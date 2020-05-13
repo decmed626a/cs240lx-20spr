@@ -1,5 +1,5 @@
 LINK_OBJS := i2c.o
-OBJS := accel.o gryo.o $(LINK_OBJS)
+OBJS := accel.o gyro.o $(LINK_OBJS)
 
 # check that your path is defined.
 ifndef CS140E_PATH
