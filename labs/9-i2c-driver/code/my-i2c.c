@@ -164,12 +164,39 @@ int i2c_write(unsigned addr, uint8_t data[], unsigned nbytes) {
     dev_barrier();
 
     // wait until any previous xfer over.
+	while (0 != read_s(i2c->status).ta) {;}
+	
+	// Clear the I2C status flags, pages 31-32
+	s_register curr_s = read_s(i2c->status);
+	curr_s.clktk = 1;
+	curr_s.err = 1;
+	curr_s.done = 1;
+	curr_s.clear = 0b11;
+	put32_T(i2c->status, s);
 
-    unimplemented();
+	// Set I2c slave address 
+	put32(&i2c->dev_addr, addr);
 
-    // wait for current xfer to complete
+	// Set number of bytes to transfer
+	put32(&i2c->dlen, nbytes);
 
-    dev_barrier();
+	// Initiate I2C transfer, p. 30 of BCM2835 manual
+	c_register curr_c = read_c(&i2c->control);
+	curr_c.st = 1;
+	curr_c.read = 0;
+	
+	// Wait for transfer to start
+	while(1 != read_s(i2c->status).ta) {;}
+    
+	for(int i = 0; i < nbytes; i++) {
+		while(read_s(i2c->status).txd != 1) {;}
+		put32(i2c->fifo, data[i]);	
+	}
+
+	// wait for current xfer to complete
+    while(1 != read_s(i2c->status).done) {;}
+	
+	dev_barrier();
 	return 1;
 }
 
@@ -179,9 +206,38 @@ int i2c_read(unsigned addr, uint8_t data[], unsigned nbytes) {
 
     // wait until any previous xfer over.
 
-    unimplemented();
+    // wait until any previous xfer over.
+	while (0 != read_s(i2c->status).ta) {;}
+	
+	// Clear the I2C status flags, pages 31-32
+	s_register curr_s = read_s(i2c->status);
+	curr_s.clktk = 1;
+	curr_s.err = 1;
+	curr_s.done = 1;
+	curr_s.clear = 0b11;
+	put32_T(i2c->status, s);
 
-    // wait for current xfer to complete
+	// Set I2c slave address 
+	put32(&i2c->dev_addr, addr);
+
+	// Set number of bytes to transfer
+	put32(&i2c->dlen, nbytes);
+
+	// Initiate I2C transfer, p. 30 of BCM2835 manual
+	c_register curr_c = read_c(&i2c->control);
+	curr_c.st = 1;
+	curr_c.read = 1;
+	
+	// Wait for transfer to start
+	while(1 != read_s(i2c->status).ta) {;}
+
+	for(int i = 0; i < nbytes; i++) {
+		while(read_s(i2c->status).txd != 1) {;}
+		data[i] = get32(i2c->fifo) & 0xFF;	
+	}
+
+	// wait for current xfer to complete
+    while(1 != read_s(i2c->status).done) {;}
 
 
     dev_barrier();
@@ -199,8 +255,25 @@ void i2c_init(void) {
 
     // we don't know what was happening before.
 	dev_barrier();
+	
+	// set GPIO function to SDA and SCL
+	const unsigned SDA_1 = 2;
+	const unsigned SCL_1 = 3;
 
-    unimplemented();
+	// Page 102 of BCM2835 manual: ALT0 for GPIO 2 and 3
+	gpio_set_function(SDA_1, GPIO_FUNC_ALT0);
+	gpio_set_function(SCL_1, GPIO_FUNC_ALT0);
+
+	// Going to I2C HW block
+	dev_barrier();
+
+	// Read current I2C val
+	c_register curr_c = read_c(i2c->control);
+	
+	// Page 29: I2CEN must be set to 1
+	curr_c.i2cen = 1;
+	
+	put32_T(i2c->control, curr_c);
 
     // don't know what device is going to get used next.
 	dev_barrier();
