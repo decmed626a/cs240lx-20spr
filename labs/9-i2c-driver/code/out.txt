@@ -1,0 +1,18 @@
+make -C /Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi
+make[1]: Nothing to be done for `all'.
+make -C /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/liblxpi
+make -C /Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi
+make[2]: Nothing to be done for `all'.
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi -I.  -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/cs140e-src -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/cs140e-interrupt -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -falign-functions=4  -c adc1115.c -o adc1115.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi -I.  -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/cs140e-src -I/Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/cs140e-interrupt -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -falign-functions=4  -c my-i2c.c -o my-i2c.o
+arm-none-eabi-ld /Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/cs140e-start.o adc1115.o my-i2c.o -T /Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/memmap -o adc1115.elf  /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/liblxpi/liblxpi.a /Users/brianjun/Desktop/school/Winter1920/CS140E/cs140e-20win/libpi/libpi.a  
+arm-none-eabi-objdump -D   adc1115.elf > adc1115.list
+arm-none-eabi-objcopy adc1115.elf -O binary adc1115.bin
+my-install ./adc1115.bin
+find-ttyusb.c:find_ttyusb_first:106:FOUND: </dev/cu.SLAB_USBtoUART>
+opened tty port </dev/cu.SLAB_USBtoUART>.
+my-install: tty-usb=</dev/cu.SLAB_USBtoUART> program=<./adc1115.bin> about to boot
+******************sending 5876 bytes
+bootloader: Done.
+listening on ttyusb=</dev/cu.SLAB_USBtoUART>
+make: *** [run] Interrupt: 2
