@@ -1,1 +1,1 @@
-bx lr
+push r0

@@ -359,6 +359,9 @@ void derive_op_1rr(const char *name, const char *opcode,
                 d_off);
     output("}\n");
 }
+
+cosnt char* push_pop_regs[] = 
+
 /*
  * 1. we start by using the compiler / assembler tool chain to get / check
  *    instruction encodings.  this is sleazy and low-rent.   however, it 
@@ -385,7 +388,6 @@ void derive_op_1rr(const char *name, const char *opcode,
  *      - able to do a non-linking function call.
  */
 int main(void) {
-#if 0
 	// part 1: implement the code to do this.
     output("-----------------------------------------\n");
     output("part1: checking: correctly generating assembly.\n");
@@ -451,6 +453,7 @@ int main(void) {
     derive_op_2rr("arm_mvn", "mvn", all_regs,all_regs);
     //derive_op_1rr("arm_bx", "bx", &(all_regs[13]));
     output("did something: now use the generated code in the checks above!\n");
+#if 0
 	// check generated instructions
     check_one_inst("and r0, r1, r2", arm_and(arm_r0, arm_r1, arm_r2));
     check_one_inst("eor r0, r1, r2", arm_eor(arm_r0, arm_r1, arm_r2));
@@ -493,9 +496,7 @@ int main(void) {
     check_one_inst("pop {r7}", arm_pop(arm_r7));
     check_one_inst("pop {lr}", arm_pop(arm_lr));
     check_one_inst("pop {pc}", arm_pop(arm_pc));
-#endif
 	check_one_inst("bx lr", arm_bx(14));
-#if 0
 	check_one_inst("b 0x12bb", arm_b(15, 0x12bb));
     check_one_inst("b 0x0", arm_b(15, 0x0));
     check_one_inst("b 0xdeadbeef", arm_b(15, 0xdeadbeef));
@@ -516,10 +517,6 @@ int main(void) {
     check_one_inst("ldr r0, [pc, #0]", arm_ldr_word_imm(0, arm_pc, 0));
     check_one_inst("str r1, [r2, #50]", arm_str_word_imm(1, 2, 50));
     check_one_inst("ldr r1, [r2, r3]", arm_ldr_word_reg(1, 2, 3));
-	check_one_inst("b label; label: ", arm_b_srcdest(0,4));
-	check_one_inst("bl label; label: ", arm_bl_srcdest(0,4));
-	check_one_inst("label: b label; ", arm_b_srcdest(0,0));
-	check_one_inst("label: bl label; ", arm_bl_srcdest(0,0));
 	check_one_inst("ldr r0, [pc,#0]", arm_ldr_word_imm(arm_r0, arm_r15, 0));
 	check_one_inst("ldr r0, [pc,#256]", arm_ldr_word_imm(arm_r0, arm_r15, 256));
 	output("\n-----------------------------------------\n");
