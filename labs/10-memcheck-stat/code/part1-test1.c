@@ -14,24 +14,19 @@ void notmain(void) {
     printk("test1\n");
 
     // start heap allocating after the first mb.   give it 1mb to use.
-    ck_init((void*)0x100000, 1024 * 1024);
+    kmalloc_init_set_start(0x100000);
+    unsigned n = 1024*1024;
+    ck_init(kmalloc(n),n);
 
-    int *p = ckalloc(4);
+    char *p = ckalloc(4);
     trace("alloc returned %p\n", p);
     memset(p, 0, 4);
     ckfree(p);
+
+    printk("%p=0xff\n", 0xff);
 
     if(ck_heap_errors())
         panic("invalid error!!\n");
     else
         trace("SUCCESS heap checked out\n");
-
-
-    memset(p, 0, 5);
-
-    if(ck_heap_errors() != 1)
-        panic("invalid error!!\n");
-    else
-        trace("SUCCESS: detected corruption\n");
-
 }
