@@ -40,7 +40,10 @@ static uint32_t hdr_cksum(hdr_t *h) {
 
 // check the header checksum and that its state == ALLOCED or FREED
 static int check_hdr(hdr_t *h) {
-    unimplemented();
+	uint32_t hdr_cksum_val = hdr_cksum(h);
+	assert(hdr_cksum_val == h->cksum);
+	assert(h->state == ALLOCED || h->state == FREED);
+	return 1;
 }
 
 static int check_mem(char *p, unsigned nbytes) {
@@ -65,19 +68,9 @@ static void mark_mem(void *p, unsigned nbytes) {
  */
 static int check_block(hdr_t *h) {
     // short circuit the checks.
-    return check_hdr(h)
+	return check_hdr(h)
         && check_mem(b_rz1_ptr(h), REDZONE)
         && check_mem(b_rz2_ptr(h), b_rz2_nbytes(h));
-}
-
-static void hdr_print(hdr_t *h) {
-    src_loc_t *l = &h->alloc_loc;
-    if(l->file)
-        printk("[allocated @ %s:%s:%d]", l->file, l->func, l->lineno);
-
-    l = &h->free_loc;
-    if(h->state == FREED && l->file)
-        printk("[freed @ %s:%s:%d]", l->file, l->func, l->lineno);
 }
 
 #define ck_error(_h, args...) do { \
@@ -85,16 +78,28 @@ static void hdr_print(hdr_t *h) {
 
 /*
  *  give an error if so.
- *  1. header is in allocated state.
+ *  1. header is not in allocated state.
  *  2. allocated block does not pass checks.
  */
 void (ckfree)(void *addr, const char *file, const char *func, unsigned lineno) {
     hdr_t *h = 0;
-
     demand(heap, not initialized?);
     trace("freeing %p\n", addr);
-    unimplemented();
-    assert(check_block(h));
+    
+	if(!check_block(h))
+		return;
+	
+	h = b_addr_to_hdr(addr);
+	if(h->state == FREED) {
+		//ck_error("blah");
+	}
+
+	h->state = FREED;
+   	h->free_loc.file = file;
+	h->free_loc.func = func;
+	h->free_loc.lineno = lineno;
+	h->cksum = fast_hash(h, sizeof(hdr_t));
+	assert(check_block(h));
 }
 
 // check if nbytes + overhead causes an overflow.
@@ -103,7 +108,7 @@ void *(ckalloc)(uint32_t nbytes, const char *file, const char *func, unsigned li
     void *ptr = 0;
 
     demand(heap, not initialized?);
-    trace("allocating %d bytes\n");
+    trace("allocating %d bytes\n", nbytes);
 
     unsigned tot = pi_roundup(nbytes, 8);
     unsigned n = tot + OVERHEAD_NBYTES;
@@ -115,13 +120,24 @@ void *(ckalloc)(uint32_t nbytes, const char *file, const char *func, unsigned li
     if((heap + n) >= heap_end)
         trace_panic("out of memory!  have only %d left, need %d\n", 
             heap_end - heap, n);
-
-
-
-    unimplemented();
-    assert(check_hdr(h));
+	
+	h = heap;
+	ptr = heap + ALLOC_OFFSET;
+	uint32_t total_size = ALLOC_OFFSET + n;
+	heap += total_size;
+	
+	h->nbytes_alloc = nbytes;
+	h->nbytes_rem = tot - nbytes;
+	h->state = ALLOCED;
+	h->alloc_loc.file = file;
+	h->alloc_loc.func = func;
+	h->alloc_loc.lineno = lineno;
+	h->cksum = fast_hash(h, sizeof(hdr_t));
+	
+	mark_mem(b_rz1_ptr(h), REDZONE);
+	mark_mem(b_rz2_ptr(h), b_rz2_nbytes(h));
+	assert(check_hdr(h));
     assert(check_block(h));
-
     trace("ckalloc:allocated %d bytes, (tot=%d), ptr=%p\n", nbytes, n, ptr);
     return ptr;
 }
@@ -138,8 +154,7 @@ int ck_heap_errors(void) {
     unsigned nerrors = 0;
     unsigned nblks = 0;
 
-
-    unimplemented();
+	
 
 
     if(nerrors)
