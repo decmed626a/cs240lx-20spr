@@ -2307,7 +2307,7 @@ Disassembly of section .debug_info:
      918:	0000039e 	muleq	r0, lr, r3
      91c:	00023815 	andeq	r3, r2, r5, lsl r8
      920:	02d91600 	sbcseq	r1, r9, #0, 12
-     924:	19010000 	stmdbne	r1, {}	; <UNPREDICTABLE>
+     924:	18010000 	stmdane	r1, {}	; <UNPREDICTABLE>
      928:	00826c01 	addeq	r6, r2, r1, lsl #24
      92c:	00000800 	andeq	r0, r0, r0, lsl #16
      930:	c99c0100 	ldmibgt	ip, {r8}
@@ -2508,18 +2508,18 @@ Disassembly of section .debug_info:
      c3c:	0007dd00 	andeq	sp, r7, r0, lsl #26
      c40:	54220000 	strtpl	r0, [r2], #-0
      c44:	01000000 	mrseq	r0, (UNDEF: 0)
-     c48:	00846cfd 	strdeq	r6, [r4], sp
+     c48:	00846cfc 	strdeq	r6, [r4], ip
      c4c:	00004c00 	andeq	r4, r0, r0, lsl #24
      c50:	7c9c0100 	ldfvcs	f0, [ip], {0}
      c54:	23000007 	movwcs	r0, #7
      c58:	00000390 	muleq	r0, r0, r3
-     c5c:	7c010301 	stcvc	3, cr0, [r1], {1}
+     c5c:	7c010201 	sfmvc	f0, 4, [r1], {1}
      c60:	02000007 	andeq	r0, r0, #7
      c64:	0002c723 	andeq	ip, r2, r3, lsr #14
-     c68:	01040100 	mrseq	r0, (UNDEF: 20)
+     c68:	01030100 	mrseq	r0, (UNDEF: 19)
      c6c:	0000077c 	andeq	r0, r0, ip, ror r7
      c70:	02b92403 	adcseq	r2, r9, #50331648	; 0x3000000
-     c74:	0e010000 	cdpeq	0, 0, cr0, cr1, cr0, {0}
+     c74:	0d010000 	stceq	0, cr0, [r1, #-0]
      c78:	00018001 	andeq	r8, r1, r1
      c7c:	84742100 	ldrbthi	r2, [r4], #-256	; 0x100
      c80:	03a30000 			; <UNDEFINED> instruction: 0x03a30000
@@ -7086,8 +7086,8 @@ Disassembly of section .debug_line:
  288:	00c80300 	sbceq	r0, r8, r0, lsl #6
  28c:	032f2f01 	teqeq	pc, #1, 30
  290:	2f2f2e34 	svccs	0x002f2e34
- 294:	2e019803 	cdpcs	8, 0, cr9, cr1, cr3, {0}
- 298:	4a7f8a03 	bmi	1fe2aac <__bss_end__+0x1fd8fd4>
+ 294:	2e019703 	cdpcs	7, 0, cr9, cr1, cr3, {0}
+ 298:	4a7f8b03 	bmi	1fe2eac <__bss_end__+0x1fd93d4>
  29c:	00308301 	eorseq	r8, r0, r1, lsl #6
  2a0:	06010402 	streq	r0, [r1], -r2, lsl #8
  2a4:	6885062e 	stmvs	r5, {r1, r2, r3, r5, r9, sl}
@@ -7111,7 +7111,7 @@ Disassembly of section .debug_line:
  2ec:	02002f67 	andeq	r2, r0, #412	; 0x19c
  2f0:	002c0104 	eoreq	r0, ip, r4, lsl #2
  2f4:	6c010402 	cfstrsvs	mvf0, [r1], {2}
- 2f8:	2fc230a1 	svccs	0x00c230a1
+ 2f8:	2fc230a0 	svccs	0x00c230a0
  2fc:	69673530 	stmdbvs	r7!, {r4, r5, r8, sl, ip, sp}^
  300:	4c306831 	ldcmi	8, cr6, [r0], #-196	; 0xffffff3c
  304:	01000602 	tsteq	r0, r2, lsl #12
