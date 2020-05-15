@@ -3,7 +3,7 @@
 TESTS = part1-test1 
 
 # easy way to test everything when you are done.
-# TESTS := $(wildcard ./part*-test*.c)
+TESTS := $(wildcard ./part*-test*.c)
 
 TESTS := $(patsubst %.c, %, $(TESTS))  
 

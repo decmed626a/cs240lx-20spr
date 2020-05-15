@@ -41,17 +41,21 @@ static uint32_t hdr_cksum(hdr_t *h) {
 // check the header checksum and that its state == ALLOCED or FREED
 static int check_hdr(hdr_t *h) {
 	uint32_t hdr_cksum_val = hdr_cksum(h);
+	printk("hdr_cksum_val = %x\n", hdr_cksum_val);
+	printk("h->cksum = %x\n", h->cksum);
 	assert(hdr_cksum_val == h->cksum);
 	assert(h->state == ALLOCED || h->state == FREED);
 	return 1;
 }
 
-static int check_mem(char *p, unsigned nbytes) {
+static int check_mem(hdr_t *h, char *p, unsigned nbytes) {
     int i;
     for(i = 0; i < nbytes; i++) {
         if(p[i] != SENTINAL) {
-            trace("block %p corrupted at offset %d\n", p, nbytes);
-            return 0;
+			char* h_addr = b_alloc_ptr(h);
+           	int offset = &p[i] - h_addr;
+			ck_error(h, "block %p corrupted at offset %d\n", h_addr, offset); 
+			return 0;
         }
     }
     return 1;
@@ -69,12 +73,9 @@ static void mark_mem(void *p, unsigned nbytes) {
 static int check_block(hdr_t *h) {
     // short circuit the checks.
 	return check_hdr(h)
-        && check_mem(b_rz1_ptr(h), REDZONE)
-        && check_mem(b_rz2_ptr(h), b_rz2_nbytes(h));
+        && check_mem(h, b_rz1_ptr(h), REDZONE)
+        && check_mem(h, b_rz2_ptr(h), b_rz2_nbytes(h));
 }
-
-#define ck_error(_h, args...) do { \
-    printk("TRACE:"); hdr_print(_h); printk(args); panic(args); } while(0)
 
 /*
  *  give an error if so.
@@ -86,20 +87,24 @@ void (ckfree)(void *addr, const char *file, const char *func, unsigned lineno) {
     demand(heap, not initialized?);
     trace("freeing %p\n", addr);
     
+	h = b_addr_to_hdr(addr);
+	
 	if(!check_block(h))
 		return;
 	
-	h = b_addr_to_hdr(addr);
 	if(h->state == FREED) {
-		//ck_error("blah");
+		return;
 	}
 
 	h->state = FREED;
-   	h->free_loc.file = file;
+	
+	mark_mem(addr, h->nbytes_alloc);
+	
+	h->free_loc.file = file;
 	h->free_loc.func = func;
 	h->free_loc.lineno = lineno;
-	h->cksum = fast_hash(h, sizeof(hdr_t));
-	assert(check_block(h));
+
+	h->cksum = hdr_cksum(h);
 }
 
 // check if nbytes + overhead causes an overflow.
@@ -121,24 +126,32 @@ void *(ckalloc)(uint32_t nbytes, const char *file, const char *func, unsigned li
         trace_panic("out of memory!  have only %d left, need %d\n", 
             heap_end - heap, n);
 	
-	h = heap;
-	ptr = heap + ALLOC_OFFSET;
+	h = (hdr_t*) heap;
 	uint32_t total_size = ALLOC_OFFSET + n;
-	heap += total_size;
 	
 	h->nbytes_alloc = nbytes;
 	h->nbytes_rem = tot - nbytes;
 	h->state = ALLOCED;
+	
 	h->alloc_loc.file = file;
 	h->alloc_loc.func = func;
 	h->alloc_loc.lineno = lineno;
-	h->cksum = fast_hash(h, sizeof(hdr_t));
+
+	h->free_loc.file = 0;
+	h->free_loc.func = 0;
+	h->free_loc.lineno = 0;
 	
+	h->cksum = hdr_cksum(h);
+
 	mark_mem(b_rz1_ptr(h), REDZONE);
 	mark_mem(b_rz2_ptr(h), b_rz2_nbytes(h));
+	
+	heap += n;
+	ptr = b_alloc_ptr(h);
+
 	assert(check_hdr(h));
     assert(check_block(h));
-    trace("ckalloc:allocated %d bytes, (tot=%d), ptr=%p\n", nbytes, n, ptr);
+    trace("ckalloc:allocated %d bytes, (total=%d), ptr=%p\n", nbytes, n, ptr);
     return ptr;
 }
 
@@ -154,10 +167,29 @@ int ck_heap_errors(void) {
     unsigned nerrors = 0;
     unsigned nblks = 0;
 
-	
+	uint8_t* check_ptr = heap_start;
+	while(heap != check_ptr) {
+		hdr_t* h = (void*)check_ptr;
+		if(!check_hdr(h)) {
+			trace("header is corrupted");
+			nerrors++;
+			break;
+		}
+		if(!check_block(h)) {nerrors++;}
+		
+		if(h->state == FREED) {
+			if(!check_mem(h, b_alloc_ptr(h), h->nbytes_alloc) ) {
+				trace("\tWrote block after free!\n");
+				nerrors++;
+			}
+		}
 
+		check_ptr += OVERHEAD_NBYTES + h->nbytes_alloc + h->nbytes_rem;
+		nblks++;
+	}
 
-    if(nerrors)
+    
+	if(nerrors)
         trace("checked %d blocks, detected %d errors\n", nblks, nerrors);
     else
         trace("SUCCESS: checked %d blocks, detected no errors\n", nblks);
