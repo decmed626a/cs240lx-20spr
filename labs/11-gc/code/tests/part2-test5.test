@@ -1,0 +1,5 @@
+TRACE:GC: SUCCESS heap checked out
+TRACE:	GC:Checked 10 blocks.
+TRACE:		GC:SUCCESS: No leaks found!
+TRACE:GC: SUCCESS: no leaks!
+PANIC:ckalloc.c:check_hdr:33:hdr_cksum_val == h->cksum

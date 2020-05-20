@@ -25,7 +25,7 @@ static struct heap_info info;
 // we could warn if the pointer is within some amount of slop
 // so that you can detect some simple overruns?
 static int in_heap(void *p) {
-    unimplemented();
+    return ((p >= info.heap_start) && (p <= info.heap_end));
 }
 
 // given potential address <addr>, returns:
@@ -42,8 +42,14 @@ static hdr_t *is_ptr(uint32_t addr) {
     if(!in_heap(p))
         return 0;
 
-    unimplemented();
-
+	hdr_t* possible_hdr = ck_first_hdr();
+	while(possible_hdr) {
+		if(addr >= (uint32_t)b_alloc_ptr(possible_hdr) && 
+		   addr <= (uint32_t)b_alloc_ptr(possible_hdr) + possible_hdr->nbytes_alloc) {
+			return possible_hdr;
+		}
+		possible_hdr = ck_next_hdr(possible_hdr);
+	}
     // output("could not find pointer %p\n", addr);
     return 0;
 }
@@ -64,8 +70,18 @@ static void mark(uint32_t *p, uint32_t *e) {
     // maybe keep this same thing?
     assert(aligned(p,4));
     assert(aligned(e,4));
-
-    unimplemented();
+	
+	hdr_t* curr_hdr = 0;
+    for(uint32_t i = 0; i <= (e - p); i++) {
+		curr_hdr = is_ptr((uint32_t)p + i);
+		if(curr_hdr != 0) {		// only if valid ptr, or > 0
+			if(curr_hdr->mark == 0) {
+				curr_hdr->mark = 1;
+				mark((uint32_t*)b_alloc_ptr(curr_hdr), 
+					 (uint32_t*)b_alloc_ptr(curr_hdr) + b_total_bytes(curr_hdr));
+			}
+		}
+	}
 }
 
 
@@ -77,9 +93,16 @@ static unsigned sweep_leak(int warn_no_start_ref_p) {
 	output("---------------------------------------------------------\n");
 	output("checking for leaks:\n");
 
-    unimplemented();
-
-
+	hdr_t* curr_hdr = ck_first_hdr();
+	while(curr_hdr != 0) {
+		if(curr_hdr->mark) {
+			curr_hdr->mark = 0;
+		} else {
+			curr_hdr->state = FREED;
+		}
+		nblocks++;
+		curr_hdr = ck_next_hdr(curr_hdr);
+	}
 
 	trace("\tGC:Checked %d blocks.\n", nblocks);
 	if(!errors && !maybe_errors)
@@ -106,7 +129,9 @@ static void mark_all(void) {
 
     // get start and end of heap so we can do quick checks
     struct heap_info i = heap_info();
-    unimplemented();
+    
+	// additional checks?
+	//unimplemented();
 
 	// pointers can be on the stack, in registers, or in the heap itself.
 
@@ -114,15 +139,18 @@ static void mark_all(void) {
     uint32_t regs[16];
     // should kill caller-saved registers
     dump_regs(regs);
-    assert(regs[0] == (uint32_t)regs[0]);
+    assert(regs[0] == (uint32_t)&regs[0]);
 
-    unimplemented();
+	// additional checks
+    //unimplemented();
+
     mark(regs, &regs[14]);
 
     // mark the stack: we are assuming only a single
     // stack.  note: stack grows down.
+	// Use the stack pointer
     uint32_t *stack_top = (void*)STACK_ADDR;
-    unimplemented();
+	mark((uint32_t*)regs[13], stack_top);
 
     // these symbols are defined in our memmap
 	extern uint32_t __bss_start__, __bss_end__;
