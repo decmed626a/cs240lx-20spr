@@ -1,0 +1,122 @@
+make -C /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi 
+make[1]: Nothing to be done for `all'.
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -ggdb -Wno-pointer-sign -Werror -Wno-unused-function -Wno-unused-variable  -c ck-gc.c -o ck-gc.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -ggdb -Wno-pointer-sign -Werror -Wno-unused-function -Wno-unused-variable  -c ckalloc.c -o ckalloc.o
+arm-none-eabi-gcc -c -nostdlib -nostartfiles -ffreestanding   -Wa,--warn -Wa,--fatal-warnings -Wa,-mcpu=arm1176jzf-s -Wa,-march=armv6zk   -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ gc-asm.S -o gc-asm.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -ggdb -Wno-pointer-sign -Werror -Wno-unused-function -Wno-unused-variable  -c tests/part2-test5.c -o tests/part2-test5.o
+arm-none-eabi-ld /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/start.o tests/part2-test5.o ckalloc.o ck-gc.o gc-asm.o -T /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/memmap -o tests/part2-test5.elf  /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libpi.a  
+arm-none-eabi-objdump -D   tests/part2-test5.elf > tests/part2-test5.list
+arm-none-eabi-objcopy tests/part2-test5.elf -O binary tests/part2-test5.bin
+my-install ./tests/part2-test5.bin
+find-ttyusb.c:find_ttyusb_first:106:FOUND: </dev/cu.SLAB_USBtoUART>
+opened tty port </dev/cu.SLAB_USBtoUART>.
+my-install: tty-usb=</dev/cu.SLAB_USBtoUART> program=<./tests/part2-test5.bin> about to boot
+******************sending 9716 bytes
+bootloader: Done.
+listening on ttyusb=</dev/cu.SLAB_USBtoUART>
+GC test: checking that a doubly-linked list is handled.
+sizeof hdr=56, redzone=128
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x1000b8
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100200
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100348
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100490
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x1005d8
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100720
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100868
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x1009b0
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100af8
+TRACE:allocating 12 bytes
+TRACE:ckalloc:allocated 12 bytes, (total=328), ptr=0x100c40
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:SUCCESS: checked 10 blocks, detected no errors
+TRACE:GC: SUCCESS heap checked out
+Doing heap check
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:SUCCESS: checked 10 blocks, detected no errors
+End heap check
+Doing heap check
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:SUCCESS: checked 10 blocks, detected no errors
+End heap check
+Doing heap check
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:SUCCESS: checked 10 blocks, detected no errors
+End heap check
+Doing heap check
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:SUCCESS: checked 10 blocks, detected no errors
+End heap check
+---------------------------------------------------------
+checking for leaks:
+TRACE:	GC:Checked 10 blocks.
+TRACE:		GC:SUCCESS: No leaks found!
+----------------------------------------------------------
+TRACE:GC: SUCCESS: no leaks!
+TRACE:going to check heap: 3280 bytes allocated, 1045296 bytes left
+TRACE:ERROR:block 0x1000b8 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100200 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100348 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100490 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x1005d8 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100720 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100868 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x1009b0 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100af8 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:ERROR:block 0x100c40 corrupted at offset 0
+TRACE:	nbytes=12
+TRACE:	Block allocated at: tests/part2-test5.c:test:16
+p[i]: 0x0
+TRACE:	Wrote block after free!
+TRACE:checked 10 blocks, detected 10 errors
+PANIC:ck-gc.c:check_no_leak:208:GC: invalid error!!
+
+DONE!!!
+
+Saw done
+
+bootloader: pi exited.  cleaning up

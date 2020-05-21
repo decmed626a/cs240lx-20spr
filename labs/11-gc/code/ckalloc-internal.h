@@ -149,6 +149,7 @@ hdr_t *ck_first_hdr(void);
 // returns pointer to next hdr or 0 if none.
 hdr_t *ck_next_hdr(hdr_t *p);
 
+//uint32_t hdr_cksum(hdr_t* h);
 
 // info about the heap useful for checking.
 struct heap_info {

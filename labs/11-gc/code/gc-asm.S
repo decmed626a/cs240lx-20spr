@@ -1,6 +1,7 @@
 #include "rpi-asm.h"
 
 MK_FN(dump_regs)
+	/*
 	str r0, [r0, #0]
 	str r1, [r0, #4]
 	str r2, [r0, #8]
@@ -17,4 +18,6 @@ MK_FN(dump_regs)
 	str r13, [r0, #52]
 	str r14, [r0, #56]
 	str r15, [r0, #60]
+	*/
+	stm r0, {r0-r14}
 	bx lr;

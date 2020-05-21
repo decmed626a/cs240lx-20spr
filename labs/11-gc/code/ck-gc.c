@@ -11,6 +11,7 @@
 #include "rpi.h"
 #include "rpi-constants.h"
 #include "ckalloc-internal.h"
+#include "libc/helper-macros.h"
 
 /****************************************************************
  * code you implement is below.
@@ -28,6 +29,17 @@ static int in_heap(void *p) {
     return ((p >= info.heap_start) && (p <= info.heap_end));
 }
 
+// 1 if addr is in h's range  0 otherwise
+static int in_range(hdr_t * h, uint32_t addr){
+    uint32_t start = (uint32_t) b_alloc_ptr(h);
+    uint32_t end = start + h->nbytes_alloc;
+    // output("checking in range %p\n", addr);
+    if(addr >= start && addr < end){
+        return 1;
+    }
+    return 0;
+}
+
 // given potential address <addr>, returns:
 //  - 0 if <addr> does not correspond to an address range of 
 //    any allocated block.
@@ -42,13 +54,23 @@ static hdr_t *is_ptr(uint32_t addr) {
     if(!in_heap(p))
         return 0;
 
-	hdr_t* possible_hdr = ck_first_hdr();
-	while(possible_hdr) {
-		if(addr >= (uint32_t)b_alloc_ptr(possible_hdr) && 
-		   addr <= (uint32_t)b_alloc_ptr(possible_hdr) + possible_hdr->nbytes_alloc) {
-			return possible_hdr;
+	hdr_t* curr_hdr = ck_first_hdr();
+	while(curr_hdr) {
+		
+		if(addr == (uint32_t)b_alloc_ptr(curr_hdr)) {
+			curr_hdr->refs_start++;
+    		//curr_hdr->cksum = hdr_cksum(curr_hdr);
+			return curr_hdr;
 		}
-		possible_hdr = ck_next_hdr(possible_hdr);
+		
+		if(addr > (uint32_t)b_alloc_ptr(curr_hdr) && 
+		   addr <= (uint32_t)b_alloc_ptr(curr_hdr) + curr_hdr->nbytes_alloc) {
+			curr_hdr->refs_middle++; 
+    		//curr_hdr->cksum = hdr_cksum(curr_hdr);
+			return curr_hdr;
+		}
+		curr_hdr = ck_next_hdr(curr_hdr);
+		
 	}
     // output("could not find pointer %p\n", addr);
     return 0;
@@ -70,18 +92,31 @@ static void mark(uint32_t *p, uint32_t *e) {
     // maybe keep this same thing?
     assert(aligned(p,4));
     assert(aligned(e,4));
-	
-	hdr_t* curr_hdr = 0;
-    for(uint32_t i = 0; i <= (e - p); i++) {
-		curr_hdr = is_ptr((uint32_t)p + i);
-		if(curr_hdr != 0) {		// only if valid ptr, or > 0
-			if(curr_hdr->mark == 0) {
-				curr_hdr->mark = 1;
-				mark((uint32_t*)b_alloc_ptr(curr_hdr), 
-					 (uint32_t*)b_alloc_ptr(curr_hdr) + b_total_bytes(curr_hdr));
-			}
-		}
-	}
+    // output("marking %p to %p\n",p, e);
+    uint32_t end = (uint32_t) e;
+    uint32_t * curr = p;
+    hdr_t * curr_hdr;
+    while(curr != e){
+        if((curr_hdr = is_ptr(*curr)) != 0){
+            // is a pointer
+            if(*curr == (uint32_t) b_alloc_ptr(curr_hdr)){
+                // output("marked start %p\n", curr_hdr);
+                curr_hdr->refs_start++;
+            }else{
+                // output("marked middle %p\n", curr_hdr);
+                curr_hdr->refs_middle++;
+            }
+            if(!curr_hdr->mark){
+
+                // output("found %p\n",b_alloc_ptr(curr_hdr) );
+                curr_hdr->mark = 1;
+                // output("marked %p\n",b_alloc_ptr(curr_hdr) );
+                // recurse
+                mark((uint32_t *) b_alloc_ptr(curr_hdr), (uint32_t *) ((char *)b_alloc_ptr(curr_hdr) + curr_hdr->nbytes_alloc));
+            }
+        }
+        curr ++;
+    }
 }
 
 
@@ -95,10 +130,18 @@ static unsigned sweep_leak(int warn_no_start_ref_p) {
 
 	hdr_t* curr_hdr = ck_first_hdr();
 	while(curr_hdr != 0) {
-		if(curr_hdr->mark) {
-			curr_hdr->mark = 0;
-		} else {
-			curr_hdr->state = FREED;
+		if(curr_hdr->state == ALLOCED) {		
+			if(curr_hdr->mark == 0) {
+				trace("ERROR:GC:DEFINITE LEAK of %x\n", b_alloc_ptr(curr_hdr));
+				errors++; //= curr_hdr->refs_start;
+			} else {
+				curr_hdr->mark = 0;
+                if(warn_no_start_ref_p && curr_hdr->refs_start == 0){
+					trace("ERROR:GC:MAYBE LEAK of %x (no pointer to the start)\n",
+						  b_alloc_ptr(curr_hdr));
+					maybe_errors++; //= curr_hdr->refs_middle;
+				}
+			}
 		}
 		nblocks++;
 		curr_hdr = ck_next_hdr(curr_hdr);
@@ -114,6 +157,42 @@ static unsigned sweep_leak(int warn_no_start_ref_p) {
 	return errors + maybe_errors;
 }
 
+# if 0
+static unsigned sweep_leak(int warn_no_start_ref_p) {
+	unsigned nblocks = 0, errors = 0, maybe_errors=0;
+	output("---------------------------------------------------------\n");
+	output("checking for leaks:\n");
+
+    
+    for(hdr_t *h = ck_first_hdr(); h; h = ck_next_hdr(h)) {
+        nblocks++;
+        if(h->state == ALLOCED){
+            // output("%p\n", b_alloc_ptr(h));
+            if(h->mark == 0){
+                errors++;
+            }else{
+                h->mark = 0;
+                if(warn_no_start_ref_p && h->refs_start == 0){
+                    maybe_errors++;
+                }
+            }
+        }else{
+            // ckfree(b_alloc_ptr(h));
+        }
+    }
+
+
+	trace("\tGC:Checked %d blocks.\n", nblocks);
+	if(!errors && !maybe_errors)
+		trace("\t\tGC:SUCCESS: No leaks found!\n");
+	else
+		trace("\t\tGC:ERRORS: %d errors, %d maybe_errors\n", 
+						errors, maybe_errors);
+	output("----------------------------------------------------------\n");
+	return errors + maybe_errors;
+}
+#endif 
+
 // write the assembly to dump all registers.
 // need this to be in a seperate assembly file since gcc 
 // seems to be too smart for its own good.
@@ -125,11 +204,13 @@ static void mark_all(void) {
     // works.
     for(hdr_t *h = ck_first_hdr(); h; h = ck_next_hdr(h)) {
         h->mark = h->refs_start = h->refs_middle = 0;
+    	//h->cksum = hdr_cksum(h);
     }
 
     // get start and end of heap so we can do quick checks
     struct heap_info i = heap_info();
-    
+	info = i;
+
 	// additional checks?
 	//unimplemented();
 
@@ -141,10 +222,13 @@ static void mark_all(void) {
     dump_regs(regs);
     assert(regs[0] == (uint32_t)&regs[0]);
 
+	for(int i = 0; i < 4; i++) {
+		regs[i] = 0;
+	}
 	// additional checks
     //unimplemented();
 
-    mark(regs, &regs[14]);
+    mark(&regs[4], &regs[14]);
 
     // mark the stack: we are assuming only a single
     // stack.  note: stack grows down.
@@ -159,7 +243,6 @@ static void mark_all(void) {
 	extern uint32_t __data_start__, __data_end__;
 	mark(&__data_start__, &__data_end__);
 }
-
 
 /***********************************************************
  * testing code: we give you this.
@@ -214,12 +297,27 @@ void implement_this(void) {
 }
 
 // similar to sweep_leak: but mark unreferenced blocks as FREED.
+// similar to sweep_leak: but mark unreferenced blocks as FREED.
 static unsigned sweep_free(void) {
 	unsigned nblocks = 0, nfreed=0, nbytes_freed = 0;
 	output("---------------------------------------------------------\n");
 	output("compacting:\n");
 
-    unimplemented();
+	hdr_t* curr_hdr = ck_first_hdr();
+	while(curr_hdr != 0) {
+		if(curr_hdr->state == ALLOCED) {		
+			if(curr_hdr->mark == 0) {
+			    nbytes_freed += curr_hdr->nbytes_alloc;
+				nfreed++;
+				void* ptr = b_alloc_ptr(curr_hdr);
+				trace("GC:FREEing ptr=%x\n", ptr);
+                ckfree(ptr);
+			}
+		}
+		nblocks++;
+		curr_hdr = ck_next_hdr(curr_hdr);
+	}
+	
 
     // i used this when freeing.
     // trace("GC:FREEing ptr=%x\n", ptr);

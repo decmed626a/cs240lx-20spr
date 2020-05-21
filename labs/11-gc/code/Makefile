@@ -3,7 +3,7 @@
 #   - "make emitall" it emit .outs for all programs in TESTS
 #   - "make runall" it will run all programs in TESTS
 # if you want to just grab all tests do:
-TESTS = part2-test1
+#TESTS = ./tests/part2-test6.c 
 TESTS := $(wildcard ./tests/part2*-test*.c)
 # TESTS := $(wildcard ./tests/part*-test*.c)
 
@@ -42,7 +42,7 @@ endif
 
 include $(CS240LX_2021_PATH)/libpi/includes.mk
 
-CFLAGS += -Wno-unused-function -Wno-unused-variable 
+CFLAGS += -Werror -Wno-unused-function -Wno-unused-variable 
 
 # add all the .h's as dependencies, libpi and the makefile.
 DEPS := $(MEMMAP) $(LPI) $(LIBM) $(wildcard ./*.h) ./Makefile 
@@ -84,7 +84,7 @@ $(OBJS): $(DEPS)
 %.check: %.bin
 	my-install ./$*.bin 2>&1 > /dev/null | grep $(GREP_STR)  > ./$*.test
 	grep $(GREP_STR) ./$*.out | diff ./$*.test -
-	# diff ./$*.test ./$*.out
+	#diff ./$*.test ./$*.out
 	rm ./$*.test
 
 # not sure if there is a better way: use these fake target to run our
