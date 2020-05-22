@@ -112,12 +112,14 @@ static inline unsigned b_total_bytes(hdr_t *h) {
 #define ck_debug(args...) do { } while(0)
 #endif
 
+#if 0
 // just emits an error.
 #define ck_error(_h, args...) do {      \
         trace("ERROR:");\
         printk(args);                    \
         hdr_print(_h);                  \
 } while(0)
+#endif 
 
 // emit error, then panic.
 #define ck_panic(_h, args...) do {      \
