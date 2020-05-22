@@ -3,7 +3,7 @@
 #   - "make emitall" it emit .outs for all programs in TESTS
 #   - "make runall" it will run all programs in TESTS
 # if you want to just grab all tests do:
-TESTS = ./tests/part3-test1
+TESTS = ./tests/part3-test3
 # TESTS := $(wildcard ./tests/part2*-test*.c)
 
 # part1-test2 part1-test3 part1-test4

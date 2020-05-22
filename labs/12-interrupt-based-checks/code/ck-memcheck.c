@@ -4,18 +4,25 @@
 #include "ckalloc-internal.h"
 #include "timer-interrupt.h"
 
-static volatile unsigned rewritten_addresses [7] = {0};
+static volatile unsigned rewritten_addresses [1024] = {0};
 static volatile unsigned target_encodings [7] = {0};
 static volatile unsigned trampoline_code[5] = {0};
-static volatile unsigned* code_array;
+static volatile unsigned* trampoline_array;
 static volatile int address_index = 0;
+
 // you'll need to pull your code from lab 2 here so you
 // can fabricate jumps
 // #include "armv6-insts.h"
 
+// useful variables to track: how many times we did 
+// checks, how many times we skipped them b/c <ck_mem_checked_pc>
+// returned 0 (skipped)
+static volatile unsigned checked = 0, skipped = 0;
+
 // used to check initialization.
 static volatile int init_p, check_on;
 static volatile unsigned cnt, period, period_sum;
+static volatile long p_counter = 0;
 
 unsigned arm_AL = 0b1110;
 
@@ -30,24 +37,26 @@ static inline uint32_t arm_b3(uint32_t L, int32_t src, int32_t dest) {
 	return u | imm24;
 }
 
-static inline uint32_t arm_bl(uint32_t pc, uint32_t imm24) {
-	uint32_t inst = 0;
-	uint32_t value = imm24 & ~(0x20000000);
-	value |= (0xFFFFFFFF - 0x2000000);
-	value = (value << 2) + 2;
-	inst = (0b1110) << 28;
-	inst |= (0b101) << 25;
-	inst |= 1 << 24;
-	inst |= value & 0xFFFFFF;
-	return inst;
+void foo(void) {
+	printk("hello there\n");
+	checked++;
+	ck_heap_errors();
+	//printk("hello there\n");
+	//while(1) {;}
+	//p_counter++; 
 }
 
 void generate_trampoline_code(uint32_t pc) {
 	trampoline_code[0] = 0xe92d5fff; // Push all the needed registers
-	trampoline_code[1] = arm_bl(*(unsigned *)pc, ck_heap_errors());
+	trampoline_code[1] = arm_b3(1, (uint32_t) &(trampoline_code[1]), (int)foo);
 	trampoline_code[2] = 0xe8bd5fff; // Pop all the needed register
 	trampoline_code[3] = *(unsigned *)pc, 
-	trampoline_code[4] = arm_b3(1, (int32_t)(&trampoline_code[4]), pc + 4);
+	trampoline_code[4] = arm_b3(0, (int32_t)(&trampoline_code[4]), pc + 4);
+	printk("trampoline_code[0]: %x\n", trampoline_code[0]);
+	printk("trampoline_code[1]: %x\n", trampoline_code[1]);
+	printk("trampoline_code[2]: %x\n", trampoline_code[2]);
+	printk("trampoline_code[3]: %x\n", trampoline_code[3]);
+	printk("trampoline_code[4]: %x\n", trampoline_code[4]);
 }
 
 void encode_target_instructions(void){
@@ -93,10 +102,6 @@ int (ck_mem_checked_pc)(uint32_t pc) {
 	return 0;
 }
 
-// useful variables to track: how many times we did 
-// checks, how many times we skipped them b/c <ck_mem_checked_pc>
-// returned 0 (skipped)
-static volatile unsigned checked = 0, skipped = 0;
 
 unsigned ck_mem_stats(int clear_stats_p) { 
     unsigned s = skipped, c = checked, n = s+c;
@@ -130,14 +135,14 @@ void ck_mem_interrupt(uint32_t pc) {
     dev_barrier();
 }
 
-int check_if_rewritten(unsigned encoding) {
+int check_if_rewritten(unsigned pc) {
 	for(int j = 0; j < 7; j++) {
-		if(encoding == rewritten_addresses[j]) {
+		if(pc == rewritten_addresses[j]) {
 			return 1;	
 		}
 	}
 	
-	rewritten_addresses[address_index] = encoding;
+	rewritten_addresses[address_index] = pc;
 	address_index++;
 	return 0;
 }
@@ -148,30 +153,26 @@ int check_if_rewritten(unsigned encoding) {
 // out more general questions.
 void trampoline_mem_interrupt(uint32_t pc) {
 
+	// Check if in interrupts
+
     // we don't know what the user was doing.
     dev_barrier();
 
 	for(int i = 0; i < 7; i++) {
 		if(*(unsigned *)pc == target_encodings[i]) {
+			//printk("found encoding %x at pc  %x \n", target_encodings[i], pc);
 			if(check_if_rewritten(*(unsigned *)pc)) {
+				//printk("already rewritten\n");
 				break;
 			} else {
-				// go into trampoline
+				printk("rewriting now\n");
+				//unsigned offset = (pc - (uint32_t)&__code_start__) / sizeof(uint32_t);
+					
 				generate_trampoline_code(pc);
-				*(unsigned *)pc = arm_bl(pc, (uint32_t)trampoline_code);	
+				printk("generated trampoline\n");
+				*(unsigned *)pc = arm_b3(0, pc, (uint32_t)&trampoline_code[0]);	
 			}
 		}
-	}
-
-	if(ck_mem_checked_pc(pc) && check_on) {
-		if(ck_heap_errors()) {
-			panic("HEAP ERROR\n");
-		}
-		checked++;
-		//ck_find_leaks(1);		
-		//ck_gc();		
-	} else {
-		skipped++;
 	}
 
     // we don't know what the user was doing.
@@ -188,11 +189,11 @@ void ck_mem_init(void) {
     assert(!in_range((uint32_t)printk, start_nocheck, end_nocheck));
 
 	encode_target_instructions();
-	code_array = kmalloc(&__code_end__ - &__code_start__);
+	//code_array = kmalloc(&__code_end__ - &__code_start__);
 
 	int_init();
 
-	timer_interrupt_init(0x2);
+	timer_interrupt_init(0x1);
 
 	system_enable_interrupts();
 }
@@ -202,6 +203,7 @@ void ck_mem_set_range(void *start, void *end) {
     assert(start < end);
 	start_check = (uint32_t)start;
 	end_check = (uint32_t)end;
+	// May need to reset code_array to 0 
 }
 
 // maybe should always do the heap check at the begining
