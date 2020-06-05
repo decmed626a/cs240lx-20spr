@@ -100,7 +100,8 @@ static unsigned check_sequential(checker_t *c) {
 
         c->A(c);
         c->B(c);
-        if(!c->check(c))
+        printk("%d\n", i);
+		if(!c->check(c))
             panic("check failed sequentially: code is broken\n");
 
 #if 0

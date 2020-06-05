@@ -269,7 +269,15 @@ int syscall_vector(unsigned pc, uint32_t r0) {
     if(sys_num == 1){
         asm volatile ("msr spsr, r1");
     }else if(sys_num == 2){
-        printk("result: %x\n", r0);
+		// if can take lock, return 1
+		if(*(int*)r0 == 0) {
+			*(int*)r0 = 1;
+			return 1;
+		} else {
+			return 0;
+		}
+        
+		//printk("result: %x\n", r0);
     }else{
         printk("illegal system call %d\n", sys_num);
     }

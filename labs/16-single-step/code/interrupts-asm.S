@@ -159,3 +159,9 @@ MK_FN(user_trampoline_ret)
   pop {r4-r12, lr}
 
   bx lr
+
+MK_FN(sys_try_lock_asm)
+  push {r4-r12, lr}
+  swi 2
+  pop {r4-r12, lr}
+  bx lr
