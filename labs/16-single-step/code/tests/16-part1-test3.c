@@ -12,7 +12,7 @@ static volatile int done = 0, cnt;
 void user_test(void)  {
     for(int i = 0; i < N; i++) 
         cnt++;
-    //printk("testing printk!\n");
+    brk_debug("testing printk!\n");
     done = 1;
 }
 
