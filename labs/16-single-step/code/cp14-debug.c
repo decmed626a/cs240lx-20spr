@@ -256,5 +256,18 @@ void brkpt_mismatch_disable0(uint32_t addr) {
 // system call numbers:
 //  <1> - set spsr to the value of <r0>
 int syscall_vector(unsigned pc, uint32_t r0) {
-    unimplemented();
+    uint32_t inst, sys_num;
+
+    // figure out the instruction and the system call number.
+    sys_num = *(unsigned*)pc & 0xFFFFFF; 
+
+    switch(sys_num) {
+    case 1: 
+			printk("Hello world\n");
+			//printk("syscall: <%s>\n", (const char *)r0); 
+            return 0;
+    default: 
+            printk("illegal system call = %d!\n", sys_num);
+            return -1;
+    }		
 }

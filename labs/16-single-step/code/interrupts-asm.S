@@ -48,6 +48,33 @@ interrupt_asm:
                         @ loads the PC with the result, then copies the 
                         @ SPSR to the CPSR.
 
+software_interrupt_asm:
+@ runs at system level (p.a2-5): assumes we have a sp
+@ implement:
+@   - save regs
+
+push {r4-r12, lr}
+
+sub lr, lr, #4
+
+@   - need to figure out what lr points to,
+mov r2, lr
+
+@   - mov the original r0 into r1
+mov r1, r0
+
+@ - mov the pointer to the syscall inst into r0
+mov r0, lr
+
+@   - call
+bl syscall_vector
+
+@   - restore regs
+pop {r4-r12, lr}
+
+@   - return from the exception.
+movs pc, lr
+
 #define TRAMPOLINE(fn) \
 	mov sp, #INT_STACK_ADDR; \
 	push {r0-r12, lr}; \
@@ -73,10 +100,6 @@ undefined_instruction_asm:
   mov sp, #INT_STACK_ADDR   
   sub   lr, lr, #4
   TRAMPOLINE(undefined_instruction_vector)
-software_interrupt_asm:
-  mov sp, #INT_STACK_ADDR   
-  sub   lr, lr, #4
-  bl    software_interrupt_vector
 prefetch_abort_asm:
   sub   lr, lr, #4
   TRAMPOLINE(prefetch_abort_vector)
@@ -94,7 +117,9 @@ MK_FN(user_trampoline_no_ret)
 
 	@ switch modes using the new mode in r0
 	mrs r5, cpsr
-	msr spsr, r5
+	
+	@msr spsr, r5
+	
 	msr cpsr, r0
 
 	mov r6, #0
@@ -124,5 +149,9 @@ MK_FN(user_trampoline_no_ret)
 @ to super mode.  i don't know if this is the right thing.
 MK_FN(user_trampoline_ret)
     @ put your code here.
-
-    bx lr
+	
+	@ Do system call
+	push {lr}
+	swi 1
+	pop {lr}
+	bx lr
