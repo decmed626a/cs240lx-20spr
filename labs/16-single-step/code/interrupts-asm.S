@@ -38,7 +38,7 @@ interrupt_asm:
   @ vpush {s0-s15}	        @ uncomment if want to save caller-saved fp regs
 
   mov   r0, lr              @ Pass old pc
-  bl    interrupt_vector    @ C function
+  @ bl    interrupt_vector    @ C function
 
   @ vpop {s0-s15}           @ pop caller saved fp regs
   pop   {r0-r12,lr} 	    @ pop integer registers
@@ -48,40 +48,6 @@ interrupt_asm:
                         @ loads the PC with the result, then copies the 
                         @ SPSR to the CPSR.
 
-software_interrupt_asm:
-@ runs at system level (p.a2-5): assumes we have a sp
-@ implement:
-@   - save regs
-
-push {r4-r12, lr}
-
-sub lr, lr, #4
-
-@   - need to figure out what lr points to,
-mov r2, lr
-
-@   - mov the original r0 into r1
-mov r1, r0
-
-@ - mov the pointer to the syscall inst into r0
-mov r0, lr
-
-@   - call
-bl syscall_vector
-
-@   - restore regs
-pop {r4-r12, lr}
-
-@   - return from the exception.
-movs pc, lr
-
-#define TRAMPOLINE(fn) \
-	mov sp, #INT_STACK_ADDR; \
-	push {r0-r12, lr}; \
-	mov r0, lr; \
-	bl fn; \
-	pop {r0-r12, lr}; \
-	movs pc, lr
 
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @ these handlers simply load a value into the stack pointer and call
@@ -95,43 +61,70 @@ movs pc, lr
 reset_asm:
   mov sp, #INT_STACK_ADDR   
   sub   lr, lr, #4
-  TRAMPOLINE(reset_vector)
+  bl    reset_vector
+
+
+#define TRAMPOLINE(fn)              \
+    mov sp, #INT_STACK_ADDR;          \
+    push  {r0-r12,lr};                \
+    mov   r0, lr;                     \
+    bl    fn;                         \
+    pop   {r0-r12,lr};                \
+    movs    pc, lr
+    
+MK_FN(data_abort_asm)
+    sub   lr, lr, #8
+    TRAMPOLINE(data_abort_vector)
+    
+MK_FN(prefetch_abort_asm)
+    sub   lr, lr, #4
+    TRAMPOLINE(prefetch_abort_vector)
+
 undefined_instruction_asm:
   mov sp, #INT_STACK_ADDR   
   sub   lr, lr, #4
-  TRAMPOLINE(undefined_instruction_vector)
-prefetch_abort_asm:
-  sub   lr, lr, #4
-  TRAMPOLINE(prefetch_abort_vector)
-data_abort_asm:
-  sub   lr, lr, #8
-  TRAMPOLINE(data_abort_vector)
+  bl    undefined_instruction_vector
+software_interrupt_asm:
+  push  {r4-r12,lr}         @ XXX: pushing too many registers: only need caller
+  sub   lr, #4              @ b/c lr is pointing 4 too far... 
+  mov   r1, r0              @ Pass r0 
+  mov   r0, lr              @ Pass old pc
+
+  bl    syscall_vector    @ C function, possibly interrupt_vector
+
+  pop   {r4-r12,lr} 	    @ pop integer registers
+  
+  movs pc, lr @ special thing that also transfers (saved) spsr to (current) cpsr.
+
+@ prefetch_abort_asm:
+@   mov sp, #INT_STACK_ADDR   
+@   sub   lr, lr, #4
+@   bl    prefetch_abort_vector
+@ data_abort_asm:
+@   mov sp, #INT_STACK_ADDR   
+@   sub   lr, lr, #4
+@   bl    data_abort_vector
+
+/********
+lab 16 patch
+ */
+
+// switches mode, jumps to routine passed in and doesn't return
 @ arguments:
 @   r0 = the cpsr value to set.
 @   r1 = the routine to call
 MK_FN(user_trampoline_no_ret)
     @ put your code here.
-
-	@ copy sp into general-purpose register
-	str sp, [r4]
-
-	@ switch modes using the new mode in r0
-	mrs r5, cpsr
-	
-	@msr spsr, r5
-	
-	msr cpsr, r0
-
-	mov r6, #0
-	@ prefetch flush
-	mcr p15, 0, r6, c7, c5, 4
-
-	@ setup sp
-	ldr sp, [r4]
-
-	@ branch and link on r1
-	blx r1
-
+    mov r2, sp @ copy sp to general purpose reg
+    // switch modes
+    msr cpsr, r0 @ move into new mode
+    mrs r5, cpsr 
+    mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
+    mov sp, r2 @ setup sp
+    push {r4-r12, lr}
+    blx  r1
+    pop {r4-r12, lr}
+    bl clean_reboot
     @ fail if they return.
     bl   brk_no_ret_error
 
@@ -140,7 +133,6 @@ MK_FN(user_trampoline_no_ret)
 @   r0 = the cpsr value to set.
 @   r1 = the routine to call
 @   r2 = the handle pointer to pass to the call <r1>
-@
 @ also: move the current mode's stack pointer to the next mode's
 @ sp
 @
@@ -148,10 +140,22 @@ MK_FN(user_trampoline_no_ret)
 @ trouble with this is that we need to do a system call to change
 @ to super mode.  i don't know if this is the right thing.
 MK_FN(user_trampoline_ret)
-    @ put your code here.
-	
-	@ Do system call
-	push {lr}
-	swi 1
-	pop {lr}
-	bx lr
+  @ 1. save the old mode and sp
+  push {r4-r12, lr}
+  mrs r4, cpsr
+  mov r5, sp
+  @ 2. load in new mode
+  msr cpsr, r0
+  @ mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
+  mov sp, r5 @ set up sp
+  mov r0, r2 @ give arg to routine
+
+  blx r1
+
+  @ return to old mode
+  mov r0, r4 @ pass old mode as arg
+  SWI 1 
+
+  pop {r4-r12, lr}
+
+  bx lr

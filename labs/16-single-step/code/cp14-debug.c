@@ -246,7 +246,14 @@ void brkpt_mismatch_set0(uint32_t addr, handler_t handler) {
 
 // should be this addr.
 void brkpt_mismatch_disable0(uint32_t addr) {
-    unimplemented();
+	uint32_t bcr0_reg = 0;
+	bcr0_reg = (0b10 << 21) |  // Set to 0b10 for address mismatch
+			   (0b0 << 20) |
+			   (0b00 << 14) |
+			   (0b1111 << 5) |
+			   (0b11 << 1) | 
+			   (0b0 << 0);
+	cp14_bcr0_set(bcr0_reg);
 }
 
 // <pc> should point to the system call instruction.
@@ -256,18 +263,16 @@ void brkpt_mismatch_disable0(uint32_t addr) {
 // system call numbers:
 //  <1> - set spsr to the value of <r0>
 int syscall_vector(unsigned pc, uint32_t r0) {
-    uint32_t inst, sys_num;
-
+    uint32_t sys_num;
     // figure out the instruction and the system call number.
-    sys_num = *(unsigned*)pc & 0xFFFFFF; 
+    sys_num = *((unsigned * ) pc) & 0xFFFFFF;
+    if(sys_num == 1){
+        asm volatile ("msr spsr, r1");
+    }else if(sys_num == 2){
+        printk("result: %x\n", r0);
+    }else{
+        printk("illegal system call %d\n", sys_num);
+    }
 
-    switch(sys_num) {
-    case 1: 
-			printk("Hello world\n");
-			//printk("syscall: <%s>\n", (const char *)r0); 
-            return 0;
-    default: 
-            printk("illegal system call = %d!\n", sys_num);
-            return -1;
-    }		
+    return 0;
 }

@@ -15,7 +15,7 @@ void user_test(void *handle)  {
     assert(handle == expected_handle);
     for(int i = 0; i < N; i++) 
         cnt++;
-    printk("testing printk!\n");
+    //brk_debug("testing printk!\n");
     done = 1;
 }
 
