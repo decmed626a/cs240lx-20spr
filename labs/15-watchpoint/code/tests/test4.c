@@ -7,7 +7,8 @@ static void handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
     printk("prefetch abort at %p\n", pc);
     if(!was_debug_instfault())
         panic("impossible: should get no other faults\n");
-    assert(pc == 0);
+    printk("pc at %p\n", pc);
+	assert(pc == 0);
     output("success!\n");
     clean_reboot();
 }

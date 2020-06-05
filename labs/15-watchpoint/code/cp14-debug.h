@@ -73,27 +73,37 @@ struct debug_id {
 };
 
 // 13-5
-static inline unsigned cp14_debug_id_get(void) {
-    unimplemented();
-}
+cp_asm_get(cp14_debug_id, p14, 0, c0, c0, 0);	
 
 /********************************************************************
  * part 1: set a watchpoint on 0 (test2.c/test3.c)
  */
 #include "bit-support.h"
 
-static inline uint32_t wfar_get(void) { unimplemented(); }
-static inline uint32_t dscr_get(void) { unimplemented(); }
+//static inline uint32_t wfar_get(void) { unimplemented(); }
+//static inline uint32_t dscr_get(void) { unimplemented(); }
+
+cp_asm_get(wfar, p14, 0, c0, c6, 0);
+//cp_asm_get(dscr, p14, 0, c0, c1, 0); 
+//cp_asm_set(dscr, p14, 0, c0, c1, 0); 
 
 // see 3-65 (page 198 in my arm1176.pdf)
-static inline uint32_t dfsr_get(void) {
-    unimplemented();
-}
+//static inline uint32_t dfsr_get(void) {
+//    unimplemented();
+//}
+
+cp_asm_get(dfsr, p15, 0, c5, c0, 0);
+cp_asm_set(dfsr, p15, 0, c5, c0, 0);
+
+
+cp_asm_get(far, p15, 0, c6, c0, 0);
 
 // was watchpoint debug fault caused by a load?
 static inline unsigned datafault_from_ld(void) {
-    unimplemented();
+	uint32_t dfsr_val = dfsr_get();
+	return !((dfsr_val >> 11) & 0x1);
 }
+
 // ...  by a store?
 static inline unsigned datafault_from_st(void) {
     return !datafault_from_ld();
@@ -101,7 +111,7 @@ static inline unsigned datafault_from_st(void) {
 
 static inline unsigned was_debugfault_r(uint32_t r) {
     // "these bits are not set on debug event.
-    unimplemented();
+    return ((r & 0b1111) == 0b0010);
 }
 
 // are we here b/c of a datafault?
@@ -110,13 +120,15 @@ static inline unsigned was_debug_datafault(void) {
     if(!was_debugfault_r(r))
         panic("impossible: should only get datafaults\n");
     // 13-11: watchpoint occured: bits [5:2] == 0b0010
-    unimplemented();
+	return 1;
 }
 
 // 3-68: fault address register: hold the MVA that the fault occured at.
-static inline uint32_t far_get(void) {
-    unimplemented();
-}
+//static inline uint32_t far_get(void) {
+//    unimplemented();
+//}
+
+
 
 
 // client supplied fault handler: give a pointer to the registers so 
@@ -135,21 +147,28 @@ void cp14_enable(void);
  * part 2: set a breakpoint on 0 (test4.c) / foo (test5.c)
  */
 
+cp_asm_set(ifar, p15, 0, c6, c0, 0);
+cp_asm_get(ifar, p15, 0, c6, c0, 0);
 
 // 3-66: instuction fault status register: hold source of last instruction
 // fault.
-static inline uint32_t ifsr_get(void) {
-    unimplemented();
-}
+//static inline uint32_t ifsr_get(void) {
+//    unimplemented();
+//}
+
+cp_asm_set(ifsr, p15, 0, c5, c0, 1);
 
 // 3-69: holds address of function that caused prefetch fault.
-static inline uint32_t ifar_get(void) {
-    unimplemented();
-}
+//static inline uint32_t ifar_get(void) {
+//    unimplemented();
+//}
+
+cp_asm_get(ifsr, p15, 0, c5, c0, 1);
 
 // was this a debug instruction fault?
 static inline unsigned was_debug_instfault(void) {
-    unimplemented();
+    unsigned r = ifsr_get();
+	return ((r & 0b1111) == 0b0010);
 }
 
 // set a breakpoint at <addr>: call handler when the fault happens.
