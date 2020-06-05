@@ -78,13 +78,9 @@ software_interrupt_asm:
   sub   lr, lr, #4
   bl    software_interrupt_vector
 prefetch_abort_asm:
-  mov sp, #INT_STACK_ADDR   
-  mov r0, lr
   sub   lr, lr, #4
   TRAMPOLINE(prefetch_abort_vector)
 data_abort_asm:
-  mov sp, #INT_STACK_ADDR   
-  mov r0, lr
   sub   lr, lr, #8
   TRAMPOLINE(data_abort_vector)
 @ arguments:

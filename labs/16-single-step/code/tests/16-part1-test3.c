@@ -8,7 +8,7 @@
 static volatile int done = 0, cnt;
 
 // see how big you can make this!
-#define N 100
+#define N 10000
 void user_test(void)  {
     for(int i = 0; i < N; i++) 
         cnt++;
