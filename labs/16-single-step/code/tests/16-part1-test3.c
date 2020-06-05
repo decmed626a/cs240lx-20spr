@@ -3,15 +3,16 @@
 #include "rpi-interrupts.h"
 #include "rpi-constants.h"
 #include "cp14-debug.h"
+#include "cpsr-util.h"
 
 static volatile int done = 0, cnt;
 
 // see how big you can make this!
-#define N 10000
+#define N 100
 void user_test(void)  {
     for(int i = 0; i < N; i++) 
         cnt++;
-    printk("testing printk!\n");
+    //printk("testing printk!\n");
     done = 1;
 }
 
