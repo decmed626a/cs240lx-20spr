@@ -6,7 +6,7 @@
 #TESTS = ./tests/test5.c
 
 # uncomment this after test1.
-SYS_OBJS = cp14-debug.o interrupts-asm.o
+SYS_OBJS = cp14-debug.o interrupts-asm.o check-interleave.o
 
 TESTS := $(wildcard ./tests/16-part2-test*.c)
 
