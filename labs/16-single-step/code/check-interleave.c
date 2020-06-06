@@ -60,7 +60,11 @@ static unsigned check_one_cswitch(checker_t *c) {
 
         // use <user_trampoline_ret> to start running c->A
 		user_trampoline_ret(cpsr_user, (void (*) (void*)) c->A, c);
-        
+
+		if(!c->switched_p) {
+			c->B(c);
+		}
+
 		if(!c->check(c)) {
             output("ERROR: check failed when switched on address %p, after %d instructions\n",
                 c->switch_addr, c->switch_on_inst_n);
@@ -100,7 +104,6 @@ static unsigned check_sequential(checker_t *c) {
 
         c->A(c);
         c->B(c);
-        printk("%d\n", i);
 		if(!c->check(c))
             panic("check failed sequentially: code is broken\n");
 
