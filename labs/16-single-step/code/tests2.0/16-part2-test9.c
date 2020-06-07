@@ -13,9 +13,7 @@ static void cnt_A(checker_t *c) {
         panic("impossible\n");
     cnt++; 
     sys_unlock(&l);
-   
-	printk("%s\n", mode_get(cpsr_get())); 
-    assert(mode_get(cpsr_get()) == USER_MODE);
+    assert(!c->interleaving_p || mode_get(cpsr_get()) == USER_MODE);
 } 
 
 // for the lab cswitch tester, we never get interrupted
