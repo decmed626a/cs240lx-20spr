@@ -18,25 +18,26 @@ static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
     // not exactly right: we consider each fault 1 inst.
     if(c->inst_count == c->switch_on_inst_n) {
         output("about to switch from %p to %p\n", pc, c->B);
-
+		if(c->B(c)) {
+		
         // 1. disable mismatch.
         // 2. set <switch_addr>, <switched_p>, <nswitches>
         // 3. call B.
-		brkpt_mismatch_disable0(pc);
-		c->switch_addr = pc;
-		c->switched_p = 1;
-		c->nswitches++;
-		c->B(c);
+			brkpt_mismatch_disable0(pc);
+			c->switch_addr = pc;
+			c->switched_p = 1;
+			c->nswitches++;
+			output("done running B, going to return to A\n");
+			return;
+		} 
+		c->switch_on_inst_n++;
+	}
+    assert(c->inst_count < c->switch_on_inst_n);
+	c->inst_count++;
 
-        output("done running B, going to return to A\n");
-    } else {
-        assert(c->inst_count < c->switch_on_inst_n);
-        c->inst_count++;
-
-        brk_debug("setting up a mismatch on %p\n", pc);
-        brkpt_mismatch_set0(pc, single_step_handler);
-		brk_debug("done setting up a mismatch on %p\n", pc);
-    }
+    brk_debug("setting up a mismatch on %p\n", pc);
+    brkpt_mismatch_set0(pc, single_step_handler);
+	brk_debug("done setting up a mismatch on %p\n", pc);
 }
 
 static unsigned check_one_cswitch(checker_t *c) {
@@ -98,7 +99,8 @@ static unsigned check_one_cswitch(checker_t *c) {
 // routines are busted, this could find it.
 static unsigned check_sequential(checker_t *c) {
     // we don't count sequential trials.
-    unsigned i;
+
+	unsigned i;
     for(i = 0; i < 100; i++) {
         c->init(c);
 

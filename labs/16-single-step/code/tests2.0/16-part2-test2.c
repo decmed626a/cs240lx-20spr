@@ -1,5 +1,6 @@
 // trivial check example: should not fail.  does nothing.
 #include "check-interleave.h"
+#include "cpsr-util.h"
 
 // do-nothing checker: should never fail.
 static void eps_A(checker_t *c) { }

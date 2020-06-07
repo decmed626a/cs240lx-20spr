@@ -2,6 +2,7 @@
 // will fail.
 #include "check-interleave.h"
 #include "pi-sys-lock.h"
+#include "cpsr-util.h"
 
 // trivial counter.   broken.
 static volatile int cnt = 0;
@@ -12,7 +13,8 @@ static void cnt_A(checker_t *c) {
         panic("impossible\n");
     cnt++; 
     sys_unlock(&l);
-    
+   
+	printk("%s\n", mode_get(cpsr_get())); 
     assert(mode_get(cpsr_get()) == USER_MODE);
 } 
 

@@ -143,11 +143,13 @@ MK_FN(user_trampoline_ret)
   @ 1. save the old mode and sp
   push {r4-r12, lr}
   mrs r4, cpsr
-  mov r5, sp
+  
   @ 2. load in new mode
   msr cpsr, r0
-  @ mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
-  mov sp, r5 @ set up sp
+  mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
+  mov sp, #STACK_ADDR2;          \
+  
+  @ 1. save the old mode and sp
   mov r0, r2 @ give arg to routine
 
   blx r1
@@ -163,5 +165,11 @@ MK_FN(user_trampoline_ret)
 MK_FN(sys_try_lock_asm)
   push {r4-r12, lr}
   swi 2
+  pop {r4-r12, lr}
+  bx lr
+
+MK_FN(sys_foo_asm)
+  push {r4-r12, lr}
+  swi 3
   pop {r4-r12, lr}
   bx lr

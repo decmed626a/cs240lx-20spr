@@ -54,9 +54,9 @@ void notmain(void) {
 
     struct checker c = cnt_mk_checker();
     int n;
-    if(check(&c))
-        panic("check should have failed!\n");
+    if(!check(&c))
+        panic("check should NOT have failed!\n");
     else 
-        exit_success("check failed as it should have, ntrials=%d, nerrors=%d\n", 
+        exit_success("check succeeded as it should have, ntrials=%d, nerrors=%d\n", 
                 c.ntrials, c.nerrors);
 }

@@ -276,7 +276,8 @@ int syscall_vector(unsigned pc, uint32_t r0) {
 		} else {
 			return 0;
 		}
-        
+	}else if (sys_num == 3) {
+		return 3;
 		//printk("result: %x\n", r0);
     }else{
         printk("illegal system call %d\n", sys_num);
