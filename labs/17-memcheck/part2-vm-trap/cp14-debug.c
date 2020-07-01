@@ -85,9 +85,10 @@ void watchpt_set0(void *_addr, handler_t handler) {
     watchpt_handler0 = handler;
 }
 
+#if 0
 // check for watchpoint fault and call <handler> if so.
 void data_abort_vector(unsigned pc) {
-    static int nfaults = 0;
+	static int nfaults = 0;
     //printk("nfault=%d: data abort at %p\n", nfaults++, pc);
     if(datafault_from_ld()) {
        // printk("was from a load\n");
@@ -109,6 +110,79 @@ void data_abort_vector(unsigned pc) {
 
     // should send all the registers so the client can modify.
     watchpt_handler0(0, pc, addr);
+#endif 
+	// b4-20
+enum {
+    SECTION_XLATE_FAULT = 0b00101,
+    SECTION_PERM_FAULT = 0b01001,
+};
+
+// remove all non-section bits.
+
+
+typedef struct {
+	unsigned status : 4;
+	unsigned domain : 4;
+	unsigned zero : 1;
+	unsigned sbz_1 : 1;
+	unsigned fs_4 : 1;
+	unsigned wr : 1;
+	unsigned sbz_2 : 20;
+} dfsr_t;
+
+
+typedef enum {
+	ALIGNMENT = 0b00001,
+	TLB_MISS = 0b0,
+	ALIGNMENT_DEP = 0b00011,
+	TRANSLATION_SECTION = 0b00101,
+	PERMISSION_SECTION = 0b01101,
+} fault_status_t;
+
+void data_abort_vector(unsigned lr) {
+    //x_mmu_disable();
+    //panic("in data abort\n");
+
+	dfsr_t dfsr = {0};
+	//uint32_t fsr = 0;
+	uint32_t far = 0;
+	asm volatile ("MRC p15, 0, %0, c5, c0, 0" : "=r"(dfsr));
+	asm volatile ("MRC p15, 0, %0, c6, c0, 0" : "=r"(far));
+
+	//printk("FSR is: %x\n", fsr);
+
+	printk("FAR is: %x\n", far);
+
+	unsigned reason = dfsr.fs_4 << 4 | dfsr.status;
+	unsigned mask_offset = ~0xFFFFF;
+	switch(reason) {
+		case ALIGNMENT:
+			x_mmu_disable();
+			panic("Alignment fault\n");
+			break;
+		case TLB_MISS:
+			x_mmu_disable();
+			panic("TLB Miss \n");
+			break;
+		case ALIGNMENT_DEP:
+			x_mmu_disable();
+			panic("Dep Alignment fault\n");
+			break;
+		case TRANSLATION_SECTION:
+			//panic("In translation");
+			printk("Translation fault\n");
+			mmu_map_section(pt_st, far & mask_offset, far & mask_offset);
+			break;
+		case PERMISSION_SECTION:
+			//panic("In permission");
+			printk("Permission fault\n");
+			mmu_mark_sec_rw (pt_st, far & mask_offset, 1);
+			break;
+		default:
+			x_mmu_disable();
+			panic("WTF case is this!?!??");
+	}
+	mmu_sync_pte_mod();
 }
 
 void cp14_enable(void) {

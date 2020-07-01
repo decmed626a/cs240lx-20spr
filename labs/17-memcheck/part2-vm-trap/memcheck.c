@@ -79,20 +79,121 @@ void memcheck_continue_after_fault(void) {
     mmu_resume_p = 1;
 }
 
+typedef struct {
+	unsigned status : 4;
+	unsigned domain : 4;
+	unsigned zero : 1;
+	unsigned sbz_1 : 1;
+	unsigned fs_4 : 1;
+	unsigned wr : 1;
+	unsigned sbz_2 : 20;
+} dfsr_t;
+
+typedef enum { 
+	ALIGNMENT = 0b00001,
+	PMSA_TLB_MISS = 0b00000,
+	ALIGNMENT_DEPR = 0b00011,
+	ICACHE_MAINT_OP_FT = 0b00100,
+	EXT_ABT_TRANSLATION_LVL_1 = 0b01100,
+	EXT_ABT_TRANSLATION_LVL_2 = 0b01110,
+	TRANSLATION_SECTION = 0b00101,
+	TRANSLATION_PAGE = 0b00111,
+	DOMAIN_SECTION = 0b01001,
+	DOMAIN_PAGE = 0b01011,
+	PERMISSION_SECTION = 0b01101,
+	PERMISSION_PAGE = 0b01111,
+	PRECISE_EXT_ABT = 0b01000,
+	EXT_ABT_PREC_DEPR = 0b01010,
+	TLB_LOCK = 0b10100,
+	COPROC_DATA_ABT = 0b11010,
+	IMPREC_EXT_ABT = 0b10110,
+	PARITY_ERR_EXCP = 0b11000,
+	DEBUG_EVENT = 0b00010,
+} dfsr_reason_t;
+
 // simple data abort handle: handle the different reasons for the tests.
 void data_abort_vector(unsigned lr) {
-    if(was_debug_datafault())
+#if 0
+	if(was_debug_datafault())
         mem_panic("should not have this\n");
-
+#endif 
     // b4-43
-    unsigned dfsr = dfsr_get();
-    unsigned fault_addr = far_get();
+    //unsigned dfsr = dfsr_get();
+    //unsigned fault_addr = far_get();
 
     // compute the rason.
-    unsigned reason = 0;
-    unimplemented();
+    //unsigned reason = 0;
 
-    last_fault_set(lr, fault_addr, reason);
+	dfsr_t dfsr = {0};
+	uint32_t far = 0;
+	
+	asm volatile ("MRC p15, 0, %0, c5, c0, 0" : "=r"(dfsr));
+	asm volatile ("MRC p15, 0, %0, c6, c0, 0" : "=r"(far));
+
+	unsigned reason = dfsr.fs_4 << 4 | dfsr.status;
+	unsigned mask_offset = ~0xFFFFF;
+	switch(reason) {
+		case ALIGNMENT:
+			printk("Alignment fault\n");
+			break;
+		case PMSA_TLB_MISS:
+			printk("TLB Miss \n");
+			break;
+		case ALIGNMENT_DEPR:
+			printk("Dep Alignment fault\n");
+			break;
+		case ICACHE_MAINT_OP_FT:
+			printk("ICache Maintenance fault\n");
+			break;
+		case EXT_ABT_TRANSLATION_LVL_1:
+			printk("Translation Level 1 fault\n");
+			break;
+		case EXT_ABT_TRANSLATION_LVL_2:
+			printk("Translation level 2 fault\n");
+			break;
+		case TRANSLATION_SECTION:
+			printk("Translation section fault\n");
+			break;
+		case TRANSLATION_PAGE:
+			printk("Translation page fault\n");
+			break;
+		case DOMAIN_SECTION:
+			printk("Domain section fault\n");
+			break;
+		case DOMAIN_PAGE:
+			printk("Domain page fault\n");
+			break;
+		case PERMISSION_SECTION:
+			printk("Permission fault\n");
+			break;
+		case PERMISSION_PAGE:
+			printk("Permission page fault\n");
+			break;
+		case PRECISE_EXT_ABT:
+			printk("Precise external abort\n");
+			break;
+		case EXT_ABT_PREC_DEPR:
+			printk("External abort precise\n");
+			break;
+		case TLB_LOCK:
+			printk("TLB Lock\n");
+			break;
+		case COPROC_DATA_ABT:
+			printk("Coprocessor data abort\n");
+			break;
+		case IMPREC_EXT_ABT:
+			printk("Imprecise external abort\n");
+			break;
+		case PARITY_ERR_EXCP:
+			printk("Parity error exception\n");
+			break;
+		case DEBUG_EVENT:
+			printk("Debug event\n");
+			break;
+		default:
+			panic("WTF case is this!?!??");
+	}
+    last_fault_set(lr, far, reason);
 
     /*
          for SECTION_XLATE_FAULT:
