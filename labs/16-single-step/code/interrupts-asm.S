@@ -140,16 +140,15 @@ MK_FN(user_trampoline_no_ret)
 @ trouble with this is that we need to do a system call to change
 @ to super mode.  i don't know if this is the right thing.
 MK_FN(user_trampoline_ret)
-  @ 1. save the old mode and sp
+  @ Save the old mode and sp
   push {r4-r12, lr}
   mrs r4, cpsr
   
-  @ 2. load in new mode
+  @ Load in new mode and prefetch flush
   msr cpsr, r0
   mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
   mov sp, #STACK_ADDR2;          \
   
-  @ 1. save the old mode and sp
   mov r0, r2 @ give arg to routine
 
   blx r1
