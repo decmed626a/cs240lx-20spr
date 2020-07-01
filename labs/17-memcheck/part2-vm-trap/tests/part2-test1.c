@@ -2,6 +2,7 @@
 // that integration went ok --- should work out of the box with
 // no changes.
 #include "memcheck.h"
+#include "cp14-debug.h"
 
 /* trivial vm test run.  */ 
 void vm_test(void) {
