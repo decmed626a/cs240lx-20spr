@@ -172,3 +172,33 @@ MK_FN(sys_foo_asm)
   swi 3
   pop {r4-r12, lr}
   bx lr
+
+MK_FN(run_fn_helper)
+  @ Save the old mode and sp
+  push {r4-r12, lr}
+  mrs r4, cpsr
+  
+  @ Load in new mode and prefetch flush
+  msr cpsr, r0
+  mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
+  mov sp, r2
+  
+  mov r0, r2
+  
+  ldr r1, [r1]
+
+  blx r1
+  
+  mov r5, r0
+
+  @ return to old mode
+  
+  mov r0, r4 @ pass old mode as arg
+ 
+  SWI 1 
+
+  mov r0, r5
+
+  pop {r4-r12, lr}
+
+  bx lr

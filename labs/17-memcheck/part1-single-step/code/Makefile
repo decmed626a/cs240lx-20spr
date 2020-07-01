@@ -8,7 +8,7 @@
 # uncomment this after test1.
 SYS_OBJS = cp14-debug.o interrupts-asm.o check-interleave.o
 
-TESTS := $(wildcard ./tests2.0/16-part2-test*.c)
+TESTS := $(wildcard ./tests/part1-test*.c)
 
 # part1-test2 part1-test3 part1-test4
 # part1-test1 part1-test2 part1-test3 part1-test4
