@@ -21,6 +21,8 @@ enum { OneMB = 1024 * 1024 };
 // don't use dom id = 0 --- too easy to miss errors.
 enum { dom_id = 1, track_id = 2 };
 
+static fld_t* pt_st = 0;
+
 /**********************************************************************
  * helper code to track the last fault (used for testing).
  */
@@ -65,7 +67,9 @@ static void dom_perm_set(unsigned dom, unsigned perm) {
     assert(dom < 16);
     assert(perm == DOM_client || perm == DOM_no_access);
 
-    unimplemented();
+	unsigned dac = (read_domain_access_ctrl() &
+					(~(0b11 << dom * 2))) | (perm << dom * 2);
+	write_domain_access_ctrl(dac);
 }
 
 
@@ -118,20 +122,18 @@ void data_abort_vector(unsigned lr) {
         mem_panic("should not have this\n");
 #endif 
     // b4-43
-    //unsigned dfsr = dfsr_get();
-    //unsigned fault_addr = far_get();
+    unsigned dfsr = dfsr_get();
+    unsigned fault_addr = far_get();
 
     // compute the rason.
     //unsigned reason = 0;
 
-	dfsr_t dfsr = {0};
-	uint32_t far = 0;
-	
-	asm volatile ("MRC p15, 0, %0, c5, c0, 0" : "=r"(dfsr));
-	asm volatile ("MRC p15, 0, %0, c6, c0, 0" : "=r"(far));
+	printk("In data abort vector\n");
 
-	unsigned reason = dfsr.fs_4 << 4 | dfsr.status;
-	unsigned mask_offset = ~0xFFFFF;
+	//unsigned reason = dfsr.fs_4 << 4 | dfsr.status;
+	unsigned reason = (dfsr & 0b1111) | (dfsr & (0b1 << 10)) >> 6;
+    last_fault_set(lr, fault_addr, reason);
+
 	switch(reason) {
 		case ALIGNMENT:
 			panic("Alignment fault\n");
@@ -152,19 +154,26 @@ void data_abort_vector(unsigned lr) {
 			panic("Translation level 2 fault\n");
 			break;
 		case TRANSLATION_SECTION:
-			panic("Translation section fault\n");
+            trace_clean_exit("section xlate fault: addr=%p, at pc=%p\n"); 
 			break;
 		case TRANSLATION_PAGE:
 			panic("Translation page fault\n");
 			break;
 		case DOMAIN_SECTION:
-			panic("Domain section fault\n");
+			printk("Domain section fault\n");
+            if(!mmu_resume_p)
+                trace_clean_exit("Going to die!\n");
+            else {
+                trace("going to try to resume\n");
+                memcheck_trap_disable();
+                return;
+            }
 			break;
 		case DOMAIN_PAGE:
 			panic("Domain page fault\n");
 			break;
 		case PERMISSION_SECTION:
-			panic("Permission fault\n");
+            panic("section permission fault: %x", fault_addr);
 			break;
 		case PERMISSION_PAGE:
 			panic("Permission page fault\n");
@@ -193,7 +202,6 @@ void data_abort_vector(unsigned lr) {
 		default:
 			panic("WTF case is this!?!??");
 	}
-    last_fault_set(lr, far, reason);
 
     /*
          for SECTION_XLATE_FAULT:

@@ -9,14 +9,19 @@ void notmain() {
     // <STACK_ADDR2> should be mapped by memcheck_init()
     uint32_t sp = STACK_ADDR2;
 
+	printk("about to do memcheck track\n");
+
     // allocates a mapping; mark as no access.
     memcheck_track(sp);
 
+	printk("about to do memcheck continue\n");
 
     // hack to do a simple unit test that we can continue after a fault.
     memcheck_continue_after_fault();
 
-    // currently we just turn on / off entire trapping system.
+	printk("about to do memcheck after fault");
+    
+	// currently we just turn on / off entire trapping system.
     memcheck_trap_enable();
 
     trace("expect 'domain section fault' for addr %p, at pc %p\n", sp, PUT32);
