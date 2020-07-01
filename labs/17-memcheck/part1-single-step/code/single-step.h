@@ -24,6 +24,19 @@ int user_mode_run_fn(int (*fn)(void), uint32_t sp) {
 	return run_fn_helper(new_cpsr,(void (*) (void)) &fn, sp);
 }
 
+static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
+	
+}
+
+int single_step_init(void) {
+	int retval = 0;
+	cp14_enable();
+	uint32_t cpsr_old = cpsr_get();
+	brkpt_mismatch_set0(0, single_step_handler);
+	retval = 1;
+	return retval;
+}
+
 /*************************************************************
  * support code for tests.
  */
