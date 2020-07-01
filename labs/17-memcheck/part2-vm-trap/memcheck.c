@@ -134,61 +134,61 @@ void data_abort_vector(unsigned lr) {
 	unsigned mask_offset = ~0xFFFFF;
 	switch(reason) {
 		case ALIGNMENT:
-			printk("Alignment fault\n");
+			panic("Alignment fault\n");
 			break;
 		case PMSA_TLB_MISS:
-			printk("TLB Miss \n");
+			panic("TLB Miss \n");
 			break;
 		case ALIGNMENT_DEPR:
-			printk("Dep Alignment fault\n");
+			panic("Dep Alignment fault\n");
 			break;
 		case ICACHE_MAINT_OP_FT:
-			printk("ICache Maintenance fault\n");
+			panic("ICache Maintenance fault\n");
 			break;
 		case EXT_ABT_TRANSLATION_LVL_1:
-			printk("Translation Level 1 fault\n");
+			panic("Translation Level 1 fault\n");
 			break;
 		case EXT_ABT_TRANSLATION_LVL_2:
-			printk("Translation level 2 fault\n");
+			panic("Translation level 2 fault\n");
 			break;
 		case TRANSLATION_SECTION:
-			printk("Translation section fault\n");
+			panic("Translation section fault\n");
 			break;
 		case TRANSLATION_PAGE:
-			printk("Translation page fault\n");
+			panic("Translation page fault\n");
 			break;
 		case DOMAIN_SECTION:
-			printk("Domain section fault\n");
+			panic("Domain section fault\n");
 			break;
 		case DOMAIN_PAGE:
-			printk("Domain page fault\n");
+			panic("Domain page fault\n");
 			break;
 		case PERMISSION_SECTION:
-			printk("Permission fault\n");
+			panic("Permission fault\n");
 			break;
 		case PERMISSION_PAGE:
-			printk("Permission page fault\n");
+			panic("Permission page fault\n");
 			break;
 		case PRECISE_EXT_ABT:
-			printk("Precise external abort\n");
+			panic("Precise external abort\n");
 			break;
 		case EXT_ABT_PREC_DEPR:
-			printk("External abort precise\n");
+			panic("External abort precise\n");
 			break;
 		case TLB_LOCK:
-			printk("TLB Lock\n");
+			panic("TLB Lock\n");
 			break;
 		case COPROC_DATA_ABT:
-			printk("Coprocessor data abort\n");
+			panic("Coprocessor data abort\n");
 			break;
 		case IMPREC_EXT_ABT:
-			printk("Imprecise external abort\n");
+			panic("Imprecise external abort\n");
 			break;
 		case PARITY_ERR_EXCP:
-			printk("Parity error exception\n");
+			panic("Parity error exception\n");
 			break;
 		case DEBUG_EVENT:
-			printk("Debug event\n");
+			panic("Debug event\n");
 			break;
 		default:
 			panic("WTF case is this!?!??");
