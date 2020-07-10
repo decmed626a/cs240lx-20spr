@@ -4,17 +4,17 @@
 int notmain_client() {
     int sys_10_asm(void);
 
-    assert(mode_is_user());
+    //assert(mode_is_user());
     int ret = sys_10_asm();
-
-    printk("syscal 10 =%d\n", ret);
+    
+	printk("syscal 10 =%d\n", ret);
     assert(ret == 10);
 
     return 0x12345678;
 }
 
 void notmain() {
-    assert(!mmu_is_enabled());
+	assert(!mmu_is_enabled());
 
     assert(mode_is_super());
     int x = memcheck_fn(notmain_client);

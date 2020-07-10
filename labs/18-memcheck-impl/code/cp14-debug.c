@@ -340,8 +340,9 @@ int syscall_vector(unsigned pc, uint32_t r0) {
     uint32_t sys_num;
     // figure out the instruction and the system call number.
     sys_num = *((unsigned * ) pc) & 0xFFFFFF;
-    if(sys_num == 1){
-        asm volatile ("msr spsr, r1");
+    printk("sys_num = %d\n", sys_num);
+	if(sys_num == 1){
+		asm volatile ("msr spsr, r1");
     }else if(sys_num == 2){
 		// if can take lock, return 1
 		if(*(int*)r0 == 0) {
@@ -353,7 +354,10 @@ int syscall_vector(unsigned pc, uint32_t r0) {
 	}else if (sys_num == 3) {
 		return 3;
 		//printk("result: %x\n", r0);
-    }else{
+    }else if (sys_num == 10) {
+		printk("In sys 10\n");
+		return 10;
+	}else{
         printk("illegal system call %d\n", sys_num);
     }
 

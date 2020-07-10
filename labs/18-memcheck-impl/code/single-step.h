@@ -3,9 +3,7 @@
 #include "rpi.h"
 #include "rpi-interrupts.h"
 #include "rpi-constants.h"
-#include "cp14-debug.h"
 #include "bit-support.h"
-#include "cpsr-util.h"
 
 int fault_cnt;
 
@@ -52,8 +50,4 @@ int single_step_init(void) {
 /*************************************************************
  * support code for tests.
  */
-static inline int mode_eq(uint32_t mode) { return mode_get(cpsr_get()) == mode; }
-static inline int mode_is_super(void) { return mode_eq(SUPER_MODE); }
-static inline int mode_is_user(void) { return mode_eq(USER_MODE); }
-
 #endif

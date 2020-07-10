@@ -15,6 +15,7 @@
 #include "memcheck.h"
 #include "cp14-debug.h"
 #include "libc/helper-macros.h"
+#include "single-step.h"
 
 enum { OneMB = 1024 * 1024 };
 
@@ -240,7 +241,8 @@ static fld_t *pt = 0;
 void memcheck_init(void) {
     // 1. init
     mmu_init();
-    assert(!mmu_is_enabled());
+	
+	assert(!mmu_is_enabled());
 
     void *base = (void*)0x100000;
 
@@ -255,6 +257,7 @@ void memcheck_init(void) {
     mmu_map_section(pt, 0x100000,  0x100000, dom_id);
     // map stack (grows down)
     mmu_map_section(pt, STACK_ADDR-OneMB, STACK_ADDR-OneMB, dom_id);
+    mmu_map_section(pt, STACK_ADDR2-OneMB, STACK_ADDR2-OneMB, dom_id);
 
     // map the GPIO: make sure these are not cached and not writeback.
     // [how to check this in general?]
@@ -332,6 +335,10 @@ void memcheck_trap_enable(void) {
     assert(memcheck_trap_enabled());
 }
 
+
+
 int memcheck_fn(int (*fn)(void)) {
+	int_init();
+	run_fn_helper(USER_MODE, fn, STACK_ADDR2);
 	return 0x12345678;
 }
