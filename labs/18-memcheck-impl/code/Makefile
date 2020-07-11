@@ -33,8 +33,7 @@ GREP_STR := 'GC:\|ERROR:\|PANIC:'
 SYS_OBJS = interrupts-asm.o mmu.o mmu-helpers.o memcheck.o
 
 ALL_SOURCES := $(wildcard ./*.c)
-OBJS := $(SYS_OBJS)
-# $(patsubst %.c, %.o, $(ALL_SOURCES))  $(SYS_OBJS)
+OBJS := $(SYS_OBJS) $(patsubst %.c, %.o, $(ALL_SOURCES))  $(SYS_OBJS)
 EXTRA_OBJS = our-mmu-asm.o
 TEST_BINARIES := $(patsubst %, %.bin, $(TESTS))  
 TEST_RUN := $(patsubst %, %.run, $(TESTS))  

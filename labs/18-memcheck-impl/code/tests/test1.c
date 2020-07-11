@@ -4,12 +4,12 @@
 int notmain_client() {
     int sys_10_asm(void);
 
-    //assert(mode_is_user());
+    assert(mode_is_user());
     int ret = sys_10_asm();
     
 	printk("syscal 10 =%d\n", ret);
     assert(ret == 10);
-
+	printk("returning in notmain_client\n");
     return 0x12345678;
 }
 
@@ -18,7 +18,8 @@ void notmain() {
 
     assert(mode_is_super());
     int x = memcheck_fn(notmain_client);
-    assert(x == 0x12345678);
+    printk("back in notmain\n");
+	assert(x == 0x12345678);
     assert(mode_is_super());
     
 

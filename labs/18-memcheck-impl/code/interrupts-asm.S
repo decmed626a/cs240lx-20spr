@@ -90,7 +90,7 @@ software_interrupt_asm:
   mov   r1, r0              @ Pass r0 
   mov   r0, lr              @ Pass old pc
 
-  @bl    syscall_vector    @ C function, possibly interrupt_vector
+  bl    syscall_vector    @ C function, possibly interrupt_vector
 
   pop   {r4-r12,lr} 	    @ pop integer registers
   
@@ -155,7 +155,7 @@ MK_FN(sys_foo_asm)
   bx lr
 
 MK_FN(run_fn_helper)
-  @ Save the old mode and sp
+   @ Save the old mode and sp
   push {r4-r12, lr}
   mrs r4, cpsr
   
@@ -183,3 +183,10 @@ MK_FN(run_fn_helper)
   pop {r4-r12, lr}
 
   bx lr
+
+MK_FN(sys_10_asm)
+  push {r4-r12, lr}
+  swi 10
+  pop {r4-r12, lr}
+  bx lr
+

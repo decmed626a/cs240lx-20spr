@@ -15,7 +15,8 @@
 #include "memcheck.h"
 #include "cp14-debug.h"
 #include "libc/helper-macros.h"
-#include "single-step.h"
+
+int run_fn_helper(uint32_t cpsr, void (*fn)(void), uint32_t sp);
 
 enum { OneMB = 1024 * 1024 };
 
@@ -335,10 +336,42 @@ void memcheck_trap_enable(void) {
     assert(memcheck_trap_enabled());
 }
 
-
-
 int memcheck_fn(int (*fn)(void)) {
 	int_init();
-	run_fn_helper(USER_MODE, fn, STACK_ADDR2);
-	return 0x12345678;
+	int result = run_fn_helper(USER_MODE,(void (*) (void)) &fn, STACK_ADDR2);
+	return result;
+}
+
+// <pc> should point to the system call instruction.
+//      can see the encoding on a3-29:  lower 24 bits hold the encoding.
+// <r0> = the first argument passed to the system call.
+//
+// system call numbers:
+//  <1> - set spsr to the value of <r0>
+int syscall_vector(unsigned pc, uint32_t r0) {
+    uint32_t sys_num;
+    // figure out the instruction and the system call number.
+    //printk("In syscall_vector\n");
+	sys_num = *((unsigned * ) pc) & 0xFFFFFF;
+    if(sys_num == 1){
+        asm volatile ("msr spsr, r1");
+    }else if(sys_num == 2){
+		// if can take lock, return 1
+		if(*(int*)r0 == 0) {
+			*(int*)r0 = 1;
+			return 1;
+		} else {
+			return 0;
+		}
+	}else if (sys_num == 3) {
+		printk("In syscall 3\n");
+		return 3;
+		//printk("result: %x\n", r0);
+    }else if (sys_num == 10) {
+		return 10;
+	}else{
+        printk("illegal system call %d\n", sys_num);
+    }
+
+    return 0;
 }
