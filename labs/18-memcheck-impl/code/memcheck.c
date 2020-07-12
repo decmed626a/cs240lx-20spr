@@ -15,6 +15,7 @@
 #include "memcheck.h"
 #include "cp14-debug.h"
 #include "libc/helper-macros.h"
+#include "single-step.h"
 
 int run_fn_helper(uint32_t cpsr, void (*fn)(void), uint32_t sp);
 
@@ -338,7 +339,11 @@ void memcheck_trap_enable(void) {
 
 int memcheck_fn(int (*fn)(void)) {
 	int_init();
+	memcheck_init();
+	single_step_init();
+	memcheck_on();
 	int result = run_fn_helper(USER_MODE,(void (*) (void)) &fn, STACK_ADDR2);
+	memcheck_off();
 	return result;
 }
 

@@ -30,7 +30,7 @@ GREP_STR := 'GC:\|ERROR:\|PANIC:'
 
 # ALL_ASM := $(wildcard ./*.S)
 # $(patsubst %.S, %.o, $(ALL_ASM))  
-SYS_OBJS = interrupts-asm.o mmu.o mmu-helpers.o memcheck.o
+SYS_OBJS = interrupts-asm.o mmu.o mmu-helpers.o cp14-debug.o memcheck.o
 
 ALL_SOURCES := $(wildcard ./*.c)
 OBJS := $(SYS_OBJS) $(patsubst %.c, %.o, $(ALL_SOURCES))  $(SYS_OBJS)

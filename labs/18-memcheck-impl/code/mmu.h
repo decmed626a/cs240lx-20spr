@@ -110,11 +110,13 @@ int mmu_is_enabled(void);
 uint32_t read_domain_access_ctrl(void);
 
 // b4-20
+#if 0
 enum {
     SECTION_XLATE_FAULT = 0b00101,
     SECTION_PERM_FAULT = 0b1101,
     DOMAIN_SECTION_FAULT = 0b1001,
 };
+#endif
 
 // mask off the sec bits
 static inline unsigned mmu_sec_bits_only(unsigned u) { return u & ~((1<<21)-1); }
