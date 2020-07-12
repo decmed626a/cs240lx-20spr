@@ -35,8 +35,9 @@ int user_mode_run_fn(int (*fn)(void), uint32_t sp) {
 }
 
 static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
-	fault_cnt++;
-	brkpt_mismatch_set0(pc, single_step_handler);
+	trace("mismatch at pc %p: disabling\n", pc);
+	memcheck_trap_enable();
+	brkpt_mismatch_disable0(pc - 4);
 }
 
 int single_step_init(void) {
@@ -44,7 +45,6 @@ int single_step_init(void) {
 	fault_cnt = 0;
 	cp14_enable();
 	uint32_t cpsr_old = cpsr_get();
-	brkpt_mismatch_set0(0, single_step_handler);
 	retval = 1;
 	return retval;
 }

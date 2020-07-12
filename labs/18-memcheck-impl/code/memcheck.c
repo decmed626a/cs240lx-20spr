@@ -24,8 +24,7 @@ enum { OneMB = 1024 * 1024 };
 // don't use dom id = 0 --- too easy to miss errors.
 enum { dom_id = 1, track_id = 2 };
 
-static fld_t* pt_st = 0;
-
+static int init_memcheck = 0;
 /**********************************************************************
  * helper code to track the last fault (used for testing).
  */
@@ -120,23 +119,12 @@ typedef enum {
 
 // simple data abort handle: handle the different reasons for the tests.
 void data_abort_vector(unsigned lr) {
-#if 0
-	if(was_debug_datafault())
-        mem_panic("should not have this\n");
-#endif 
     // b4-43
     unsigned dfsr = dfsr_get();
     unsigned fault_addr = far_get();
 
-    // compute the rason.
-    //unsigned reason = 0;
-
-	printk("In data abort vector\n");
-
-	//unsigned reason = dfsr.fs_4 << 4 | dfsr.status;
 	unsigned reason = (dfsr & 0b1111) | (dfsr & (0b1 << 10)) >> 6;
     last_fault_set(lr, fault_addr, reason);
-
 	switch(reason) {
 		case ALIGNMENT:
 			panic("Alignment fault\n");
@@ -163,14 +151,9 @@ void data_abort_vector(unsigned lr) {
 			panic("Translation page fault\n");
 			break;
 		case DOMAIN_SECTION:
-			printk("Domain section fault\n");
-            if(!mmu_resume_p)
-                trace_clean_exit("Going to die!\n");
-            else {
-                trace("going to try to resume\n");
-                memcheck_trap_disable();
-                return;
-            }
+			trace("domain section fault: %p at pc=%p\n", fault_addr, lr);
+			memcheck_trap_disable();
+			brkpt_mismatch_set0(lr, single_step_handler);
 			break;
 		case DOMAIN_PAGE:
 			panic("Domain page fault\n");
@@ -239,6 +222,8 @@ void interrupt_vector(unsigned lr) {
 // XXX: our page table, gross.
 static fld_t *pt = 0;
 
+static uint32_t heap_start;
+
 // need some parameters for this.
 void memcheck_init(void) {
     // 1. init
@@ -266,6 +251,11 @@ void memcheck_init(void) {
     mmu_map_section(pt, 0x20000000, 0x20000000, dom_id);
     mmu_map_section(pt, 0x20100000, 0x20100000, dom_id);
     mmu_map_section(pt, 0x20200000, 0x20200000, dom_id);
+
+	// Need to map heap to get domain section fault for part 2
+	heap_start = (uint32_t)pt + OneMB;
+	kmalloc_init_set_start(heap_start);
+	mmu_map_section(pt, heap_start, heap_start, track_id); 
 
     // if we don't setup the interrupt stack = super bad infinite loop
     mmu_map_section(pt, INT_STACK_ADDR-OneMB, INT_STACK_ADDR-OneMB, dom_id);
@@ -338,9 +328,12 @@ void memcheck_trap_enable(void) {
 }
 
 int memcheck_fn(int (*fn)(void)) {
-	int_init();
-	memcheck_init();
-	single_step_init();
+	if(!init_memcheck) {
+		int_init();
+		memcheck_init();
+		single_step_init();
+		init_memcheck = 1;
+	}
 	memcheck_on();
 	int result = run_fn_helper(USER_MODE,(void (*) (void)) &fn, STACK_ADDR2);
 	memcheck_off();
