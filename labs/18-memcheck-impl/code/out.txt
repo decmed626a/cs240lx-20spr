@@ -1,177 +1,116 @@
 make -C /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi 
 make[1]: Nothing to be done for `all'.
+arm-none-eabi-gcc -c -nostdlib -nostartfiles -ffreestanding   -Wa,--warn -Wa,--fatal-warnings -Wa,-mcpu=arm1176jzf-s -Wa,-march=armv6zk   -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private interrupts-asm.S -o interrupts-asm.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -fno-toplevel-reorder -Werror  -c mmu.c -o mmu.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -fno-toplevel-reorder -Werror  -c mmu-helpers.c -o mmu-helpers.o
 arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -fno-toplevel-reorder -Werror  -c cp14-debug.c -o cp14-debug.o
-cp14-debug.c: In function ‘x_mmu_disable’:
-cp14-debug.c:12:18: error: storage class specified for parameter ‘watchpt_handler0’
- static handler_t watchpt_handler0 = 0;
-                  ^
-cp14-debug.c:12:1: error: parameter ‘watchpt_handler0’ is initialized
- static handler_t watchpt_handler0 = 0;
- ^
-In file included from cp14-debug.c:5:0:
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.c:14:1: note: in expansion of macro ‘cp_asm_set’
- cp_asm_set(prefetch_flush, p15, 0, c7, c5, 4)
- ^
-cp14-debug.h:38:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline uint32_t fn_name ## _get(void) {                      \
-                                                  ^
-cp14-debug.h:52:36: note: in expansion of macro ‘cp_asm_get’
- #define cp14_asm_get(fn, crm, op2) cp_asm_get(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:25:1: note: in expansion of macro ‘cp14_asm_get’
- cp14_asm_get(wcr0, c0, 7)
- ^
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.h:51:36: note: in expansion of macro ‘cp_asm_set’
- #define cp14_asm_set(fn, crm, op2) cp_asm_set(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:31:1: note: in expansion of macro ‘cp14_asm_set’
- cp14_asm_set(wcr0, c0, 7) 
- ^
-cp14-debug.h:38:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline uint32_t fn_name ## _get(void) {                      \
-                                                  ^
-cp14-debug.h:52:36: note: in expansion of macro ‘cp_asm_get’
- #define cp14_asm_get(fn, crm, op2) cp_asm_get(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:35:1: note: in expansion of macro ‘cp14_asm_get’
- cp14_asm_get(wvr0, c0, 6)
- ^
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.h:51:36: note: in expansion of macro ‘cp_asm_set’
- #define cp14_asm_set(fn, crm, op2) cp_asm_set(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:39:1: note: in expansion of macro ‘cp14_asm_set’
- cp14_asm_set(wvr0, c0, 6)
- ^
-cp14-debug.h:38:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline uint32_t fn_name ## _get(void) {                      \
-                                                  ^
-cp14-debug.h:52:36: note: in expansion of macro ‘cp_asm_get’
- #define cp14_asm_get(fn, crm, op2) cp_asm_get(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:45:1: note: in expansion of macro ‘cp14_asm_get’
- cp14_asm_get(dscr, c1, 0) 
- ^
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.h:51:36: note: in expansion of macro ‘cp_asm_set’
- #define cp14_asm_set(fn, crm, op2) cp_asm_set(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:51:1: note: in expansion of macro ‘cp14_asm_set’
- cp14_asm_set(dscr, c1, 0)
- ^
-cp14-debug.c:55:51: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void watchpt_set0(void *_addr, handler_t handler) {
-                                                   ^
-cp14-debug.c:116:1: error: empty declaration [-Werror]
- enum {
- ^
-cp14-debug.c:132:3: error: storage class specified for parameter ‘dfsr_t’
- } dfsr_t;
-   ^
-cp14-debug.c:141:3: error: storage class specified for parameter ‘fault_status_t’
- } fault_status_t;
-   ^
-cp14-debug.c:143:37: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void data_abort_vector(unsigned lr) {
-                                     ^
-cp14-debug.c:189:24: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void cp14_enable(void) {
-                        ^
-cp14-debug.c:212:18: error: storage class specified for parameter ‘brkpt_handler0’
- static handler_t brkpt_handler0 = 0;
-                  ^
-cp14-debug.c:212:1: error: parameter ‘brkpt_handler0’ is initialized
- static handler_t brkpt_handler0 = 0;
- ^
-In file included from cp14-debug.c:5:0:
-cp14-debug.h:38:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline uint32_t fn_name ## _get(void) {                      \
-                                                  ^
-cp14-debug.h:52:36: note: in expansion of macro ‘cp_asm_get’
- #define cp14_asm_get(fn, crm, op2) cp_asm_get(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:214:1: note: in expansion of macro ‘cp14_asm_get’
- cp14_asm_get(cp14_bvr0, c0, 4)
- ^
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.h:51:36: note: in expansion of macro ‘cp_asm_set’
- #define cp14_asm_set(fn, crm, op2) cp_asm_set(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:215:1: note: in expansion of macro ‘cp14_asm_set’
- cp14_asm_set(cp14_bvr0, c0, 4)
- ^
-cp14-debug.h:38:50: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline uint32_t fn_name ## _get(void) {                      \
-                                                  ^
-cp14-debug.h:52:36: note: in expansion of macro ‘cp_asm_get’
- #define cp14_asm_get(fn, crm, op2) cp_asm_get(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:216:1: note: in expansion of macro ‘cp14_asm_get’
- cp14_asm_get(cp14_bcr0, c0, 5)
- ^
-cp14-debug.h:28:52: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
-     static inline void fn_name ## _set(uint32_t v) {                    \
-                                                    ^
-cp14-debug.h:51:36: note: in expansion of macro ‘cp_asm_set’
- #define cp14_asm_set(fn, crm, op2) cp_asm_set(fn, p14, 0, c0, crm, op2)
-                                    ^
-cp14-debug.c:217:1: note: in expansion of macro ‘cp14_asm_set’
- cp14_asm_set(cp14_bcr0, c0, 5)
- ^
-cp14-debug.c:223:33: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- static unsigned bvr_match(void) { return 0b00 << 21; }
-                                 ^
-cp14-debug.c:224:36: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- static unsigned bvr_mismatch(void) { return 0b10 << 21; }
-                                    ^
-cp14-debug.c:226:44: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- static inline uint32_t brkpt_get_va0(void) {
-                                            ^
-cp14-debug.c:229:34: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- static void brkpt_disable0(void) {
-                                  ^
-cp14-debug.c:243:51: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void brkpt_set0(uint32_t addr, handler_t handler) {
-                                                   ^
-cp14-debug.c:271:41: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void prefetch_abort_vector(unsigned pc) {
-                                         ^
-cp14-debug.c:280:36: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void interrupt_vector(unsigned pc) {
-                                    ^
-cp14-debug.c:288:1: error: parameter ‘brk_verbose_p’ is initialized
- int brk_verbose_p = 0;
- ^
-cp14-debug.c:291:29: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void brk_no_ret_error(void) {
-                             ^
-cp14-debug.c:295:60: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void brkpt_mismatch_set0(uint32_t addr, handler_t handler) {
-                                                            ^
-cp14-debug.c:323:45: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- void brkpt_mismatch_disable0(uint32_t addr) {
-                                             ^
-cp14-debug.c:340:46: error: expected ‘=’, ‘,’, ‘;’, ‘asm’ or ‘__attribute__’ before ‘{’ token
- int syscall_vector(unsigned pc, uint32_t r0) {
-                                              ^
-In file included from cp14-debug.c:7:0:
-vm.h:270:6: error: old-style parameter declarations in prototyped function definition
- void x_mmu_disable(void)
-      ^
-cp14-debug.c:362:1: error: expected ‘{’ at end of input
- }
- ^
-cc1: all warnings being treated as errors
-make: *** [cp14-debug.o] Error 1
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -fno-toplevel-reorder -Werror  -c memcheck.c -o memcheck.o
+arm-none-eabi-gcc -Og -Wall -nostdlib -nostartfiles -ffreestanding -mcpu=arm1176jzf-s -mtune=arm1176jzf-s  -std=gnu99 -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/include -I.  -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/ -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libc -I/Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/staff-private -ggdb -Wno-pointer-sign -Wno-unused-function -Wno-unused-variable -fno-toplevel-reorder -Werror  -c tests/part2-test2.c -o tests/part2-test2.o
+arm-none-eabi-ld /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/start.o tests/part2-test2.o interrupts-asm.o mmu.o mmu-helpers.o cp14-debug.o memcheck.o our-mmu-asm.o -T /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/memmap -o tests/part2-test2.elf  /Users/brianjun/Desktop/school/Spring1920/CS240LX/cs240lx-20spr/libpi/libpi.a  
+arm-none-eabi-objdump -D   tests/part2-test2.elf > tests/part2-test2.list
+arm-none-eabi-objcopy tests/part2-test2.elf -O binary tests/part2-test2.bin
+my-install ./tests/part2-test2.bin
+find-ttyusb.c:find_ttyusb_first:106:FOUND: </dev/cu.SLAB_USBtoUART>
+opened tty port </dev/cu.SLAB_USBtoUART>.
+my-install: tty-usb=</dev/cu.SLAB_USBtoUART> program=<./tests/part2-test2.bin> about to boot
+******************sending 18912 bytes
+bootloader: Done.
+listening on ttyusb=</dev/cu.SLAB_USBtoUART>
+memcheck.c:memcheck_on:279:memcheck: about to turn ON
+memcheck.c:memcheck_on:283:memcheck: ON
+in notmain_client: going to kmalloc!
+TRACE:domain section fault: 0x200000 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200001 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200002 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200003 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200004 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200005 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200006 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+TRACE:domain section fault: 0x200007 at pc=0xa804
+TRACE:mismatch at pc 0xa808: disabling
+going to run test_resume
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 0
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 0
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 1
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 1
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 2
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 2
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 3
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 3
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 4
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 4
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 5
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 5
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 6
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 6
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 7
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 7
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 8
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 8
+TRACE:expect 'domain section fault' for addr 0x200000, at pc 0xb120
+TRACE:domain section fault: 0x200000 at pc=0xb120
+TRACE:mismatch at pc 0xb124: disabling
+TRACE:checking that 0x200000 == 9
+TRACE:domain section fault: 0x200000 at pc=0xb150
+TRACE:mismatch at pc 0xb154: disabling
+TRACE:correct: 0x200000 == 9
+memcheck.c:memcheck_off:291:memcheck: OFF
+TRACE:success!!
+DONE!!!
+
+Saw done
+
+bootloader: pi exited.  cleaning up
+rm tests/part2-test2.o
