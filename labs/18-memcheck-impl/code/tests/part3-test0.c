@@ -6,20 +6,22 @@
 unsigned expected = 45;
 
 int notmain_client() {
-    // zero initialized by kmalloc.
+	// zero initialized by kmalloc.
     volatile int *x = memcheck_alloc(4);
+    printk("*x = %d\n", *x);
     for(int i = 0; i < 10; i++)
         *x += i;
     printk("*x = %d\n", *x);
     assert(get32(x) == expected);
-    return *x;
+    printk("about to return\n");
+	return *x;
 }
 
 void notmain() {
     assert(!mmu_is_enabled());
-
     int x = memcheck_fn(notmain_client);
-    assert(!mmu_is_enabled());
+    printk("Back in notmain\n");
+	assert(!mmu_is_enabled());
 
     assert(x == expected);
 

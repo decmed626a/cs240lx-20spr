@@ -16,15 +16,24 @@
 #include "cp14-debug.h"
 #include "libc/helper-macros.h"
 #include "single-step.h"
+#include "memcheck-internal.h"
 
 int run_fn_helper(uint32_t cpsr, void (*fn)(void), uint32_t sp);
+int shadow_alloc(uint32_t addr, uint32_t n, uint32_t state);
+int shadow_free(uint32_t addr, uint32_t n, uint32_t state);
+
+static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr);
 
 enum { OneMB = 1024 * 1024 };
 
 // don't use dom id = 0 --- too easy to miss errors.
-enum { dom_id = 1, track_id = 2 };
+enum { dom_id = 1, track_id = 2, shadow_id = 3};
 
 static int init_memcheck = 0;
+
+static uint32_t shadow_ptr_lut[64] = {0}; 
+static uint32_t shadow_size_lut[64] = {0}; 
+static int shadow_lut_index = 0;
 /**********************************************************************
  * helper code to track the last fault (used for testing).
  */
@@ -74,6 +83,11 @@ static void dom_perm_set(unsigned dom, unsigned perm) {
 	write_domain_access_ctrl(dac);
 }
 
+void check_mode(void) {
+	printk("Mode is: %s\n", mode_str(cpsr_get()));
+	assert(mode_is_super());
+	panic("In check_mode\n");
+}
 
 /**************************************************************************
  * handle a trap.
@@ -145,7 +159,7 @@ void data_abort_vector(unsigned lr) {
 			panic("Translation level 2 fault\n");
 			break;
 		case TRANSLATION_SECTION:
-            trace_clean_exit("section xlate fault: addr=%p, at pc=%p\n"); 
+            trace_clean_exit("section xlate fault: addr=%p, at pc=%p\n", fault_addr, lr); 
 			break;
 		case TRANSLATION_PAGE:
 			panic("Translation page fault\n");
@@ -214,6 +228,11 @@ void interrupt_vector(unsigned lr) {
     panic("impossible\n");
 }
 
+static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
+    trace("mismatch at pc %p: disabling\n", pc);
+	memcheck_trap_enable();
+    brkpt_mismatch_disable0(pc);
+}
 
 /*************************************************************************
  * helper code: you don't have to write this; it's based on cs140e.
@@ -223,6 +242,7 @@ void interrupt_vector(unsigned lr) {
 static fld_t *pt = 0;
 
 static uint32_t heap_start;
+static uint32_t shadow_start;
 
 // need some parameters for this.
 void memcheck_init(void) {
@@ -245,17 +265,22 @@ void memcheck_init(void) {
     // map stack (grows down)
     mmu_map_section(pt, STACK_ADDR-OneMB, STACK_ADDR-OneMB, dom_id);
     mmu_map_section(pt, STACK_ADDR2-OneMB, STACK_ADDR2-OneMB, dom_id);
-
+    printk("about to do STACK_ADDR2 assert\n");
+	//mmu_map_section(pt, STACK_ADDR2, STACK_ADDR2, dom_id);
     // map the GPIO: make sure these are not cached and not writeback.
     // [how to check this in general?]
     mmu_map_section(pt, 0x20000000, 0x20000000, dom_id);
     mmu_map_section(pt, 0x20100000, 0x20100000, dom_id);
     mmu_map_section(pt, 0x20200000, 0x20200000, dom_id);
-
 	// Need to map heap to get domain section fault for part 2
 	heap_start = (uint32_t)pt + OneMB;
 	kmalloc_init_set_start(heap_start);
 	mmu_map_section(pt, heap_start, heap_start, track_id); 
+	dom_perm_set(track_id, DOM_no_access);
+	// Need to crate and map shadow memory for part 3
+	shadow_start = heap_start + OneMB;
+	mmu_map_section(pt, shadow_start, shadow_start, dom_id);
+	//dom_perm_set(shadow_id, DOM_client);
 
     // if we don't setup the interrupt stack = super bad infinite loop
     mmu_map_section(pt, INT_STACK_ADDR-OneMB, INT_STACK_ADDR-OneMB, dom_id);
@@ -268,7 +293,7 @@ void memcheck_init(void) {
     // set up permissions for the different domains: we only use <dom_id>
     // and permissions r/w.
     write_domain_access_ctrl(0b01 << dom_id*2);
-
+	assert(0 != mmu_lookup_section(pt, STACK_ADDR2-OneMB));
     // use the sequence on B2-25
     set_procid_ttbr0(0x140e, dom_id, pt);
 }
@@ -291,6 +316,7 @@ void memcheck_off(void) {
     debug("memcheck: OFF\n");
 }
 
+#if 0
 void memcheck_map(uint32_t base) {
     assert(is_aligned(base,OneMB));
 
@@ -304,6 +330,7 @@ void memcheck_track(uint32_t base) {
     // XXX: need to handle when it's already mapped.
     mmu_map_section(pt, base, base + OneMB, track_id);
 }
+#endif 
 
 void memcheck_no_access(uint32_t base) {
     base &= ~(OneMB - 1);
@@ -335,9 +362,41 @@ int memcheck_fn(int (*fn)(void)) {
 		init_memcheck = 1;
 	}
 	memcheck_on();
-	int result = run_fn_helper(USER_MODE,(void (*) (void)) &fn, STACK_ADDR2);
+	assert(mode_is_super());
+	int result = run_fn_helper(USER_MODE,(void (*) (void)) fn, STACK_ADDR2);
+	assert(mode_is_super());
 	memcheck_off();
 	return result;
+}
+
+void* memcheck_alloc_helper(unsigned n) {
+	printk("checking n\n");
+	assert(n == 4);
+	uint32_t shadow_ptr = (uint32_t)kmalloc(n);
+	printk("shadow_ptr: %p\n", shadow_ptr);
+#if 0
+	shadow_ptr_lut[shadow_lut_index] = shadow_ptr;
+	shadow_size_lut[shadow_lut_index] = n;
+	shadow_lut_index++;
+	printk("shadow_lut_index %d\n", shadow_lut_index);
+#endif 
+	memset((void*)(shadow_ptr + OneMB), n, SH_ALLOCED);
+	return (void*) shadow_ptr;
+}
+
+void memcheck_free(void* ptr) {
+	kfree(ptr);
+	uint32_t size_to_free = 0;
+	//Dawson: if we don't find it, give an error
+	// may want to bring in ck_alloc
+	// Valgrind paper: used a hash table to keep track of locations
+	for(int i = 0; i < shadow_lut_index; i++) {
+		if((uint32_t)ptr == shadow_ptr_lut[i]) {
+			size_to_free = shadow_size_lut[i];
+			break;
+		}
+	}
+	shadow_free(((uint32_t)ptr + OneMB), size_to_free, SH_FREED);
 }
 
 // <pc> should point to the system call instruction.
@@ -352,8 +411,10 @@ int syscall_vector(unsigned pc, uint32_t r0) {
     //printk("In syscall_vector\n");
 	sys_num = *((unsigned * ) pc) & 0xFFFFFF;
     if(sys_num == 1){
-        asm volatile ("msr spsr, r1");
-    }else if(sys_num == 2){
+        printk("In syscall 1\n");
+    	asm volatile("msr spsr, %0" :: "r"(r0));
+		asm volatile ("mcr p15, 0, r0, c7, c5, 4");
+	}else if(sys_num == 2){
 		// if can take lock, return 1
 		if(*(int*)r0 == 0) {
 			*(int*)r0 = 1;
@@ -362,10 +423,20 @@ int syscall_vector(unsigned pc, uint32_t r0) {
 			return 0;
 		}
 	}else if (sys_num == 3) {
-		printk("In syscall 3\n");
-		return 3;
-		//printk("result: %x\n", r0);
-    }else if (sys_num == 10) {
+		// RMW: enable access, set shadow memory, disable access
+		// Dawson: try to get all the code in here
+		dom_perm_set(track_id, DOM_client);
+		printk("asserting that r0 == 4, %x\n", r0);
+		assert(r0 == 4);
+		uint32_t val = (uint32_t)memcheck_alloc_helper(r0);
+		dom_perm_set(track_id, DOM_no_access);
+		return val;
+    }else if (sys_num == 4) {
+		//dom_perm_set(shadow_id, DOM_client);
+		//memset((void*)r0, r1, r2);
+		//dom_perm_set(shadow_id, DOM_no_access);
+	}
+	else if (sys_num == 10) {
 		return 10;
 	}else{
         printk("illegal system call %d\n", sys_num);

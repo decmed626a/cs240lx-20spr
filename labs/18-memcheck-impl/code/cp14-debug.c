@@ -225,14 +225,11 @@ void brkpt_set0(uint32_t addr, handler_t handler) {
 
 // if get a breakpoint call <brkpt_handler0>
 void prefetch_abort_vector(unsigned pc) {
-    //printk("prefetch abort at %p\n", pc);
     if(!was_debug_instfault())
         panic("impossible: should get no other faults\n");
     assert(brkpt_handler0);
-    //printk("After assert\n", pc);
     brkpt_handler0(0, pc, ifar_get());
 }
-
 /**************************************************************
  * part 2
  */

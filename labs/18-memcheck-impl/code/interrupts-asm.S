@@ -160,20 +160,19 @@ MK_FN(run_fn_helper)
   mrs r4, cpsr
   
   @ Load in new mode and prefetch flush
-  msr cpsr, r0
+  @ msr cpsr, r0
+  cps #USER_MODE
   mcr p15, 0, r0, c7, c5, 4 @ prefetch flush
+  
   mov sp, r2
   
   mov r0, r2
   
-  ldr r1, [r1]
-
   blx r1
   
   mov r5, r0
 
   @ return to old mode
-  
   mov r0, r4 @ pass old mode as arg
  
   SWI 1 
@@ -182,6 +181,18 @@ MK_FN(run_fn_helper)
 
   pop {r4-r12, lr}
 
+  bx lr
+
+MK_FN(memcheck_alloc)
+  push {r4-r12, lr}
+  swi 3
+  pop {r4-r12, lr}
+  bx lr
+
+MK_FN(shadow_free)
+  push {r4-r12, lr}
+  swi 4
+  pop {r4-r12, lr}
   bx lr
 
 MK_FN(sys_10_asm)

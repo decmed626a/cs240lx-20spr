@@ -40,7 +40,7 @@ void mmu_map_sections(fld_t *pt, unsigned va, unsigned pa, unsigned nsec, uint32
 
 
 // lookup section <va> in page table <pt>
-fld_t *mmu_lookup(fld_t *pt, uint32_t va);
+fld_t *mmu_lookup_section(fld_t *pt, unsigned va);
 
 // *<pte> = e.   more precisely flushes state.
 void mmu_sync_pte_mod(fld_t *pte, fld_t e);

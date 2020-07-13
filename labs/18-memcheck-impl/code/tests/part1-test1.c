@@ -4,9 +4,7 @@
 int notmain_client() {
     int sys_10_asm(void);
 
-    assert(mode_is_user());
     int ret = sys_10_asm();
-    
 	printk("syscal 10 =%d\n", ret);
     assert(ret == 10);
 	printk("returning in notmain_client\n");
