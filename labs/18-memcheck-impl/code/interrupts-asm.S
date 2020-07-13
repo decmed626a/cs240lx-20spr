@@ -189,7 +189,7 @@ MK_FN(memcheck_alloc)
   pop {r4-r12, lr}
   bx lr
 
-MK_FN(shadow_free)
+MK_FN(memcheck_free)
   push {r4-r12, lr}
   swi 4
   pop {r4-r12, lr}

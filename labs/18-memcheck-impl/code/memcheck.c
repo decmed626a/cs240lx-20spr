@@ -230,6 +230,11 @@ void interrupt_vector(unsigned lr) {
 
 static void single_step_handler(uint32_t regs[16], uint32_t pc, uint32_t addr) {
     trace("mismatch at pc %p: disabling\n", pc);
+    trace("fault addr at %p\n", addr);
+	printk("Val: %x\n", *((uint32_t*)(addr + OneMB)));
+	if(*((uint32_t*)(addr + OneMB)) != 0x2020202) {
+		panic("Invalid store\n");
+	}
 	memcheck_trap_enable();
     brkpt_mismatch_disable0(pc);
 }
@@ -280,7 +285,7 @@ void memcheck_init(void) {
 	// Need to crate and map shadow memory for part 3
 	shadow_start = heap_start + OneMB;
 	mmu_map_section(pt, shadow_start, shadow_start, dom_id);
-	//dom_perm_set(shadow_id, DOM_client);
+	dom_perm_set(shadow_id, DOM_no_access);
 
     // if we don't setup the interrupt stack = super bad infinite loop
     mmu_map_section(pt, INT_STACK_ADDR-OneMB, INT_STACK_ADDR-OneMB, dom_id);
@@ -374,29 +379,30 @@ void* memcheck_alloc_helper(unsigned n) {
 	assert(n == 4);
 	uint32_t shadow_ptr = (uint32_t)kmalloc(n);
 	printk("shadow_ptr: %p\n", shadow_ptr);
+	printk("shadow_ptr + OneMB: %p\n", shadow_ptr + OneMB);
 #if 0
 	shadow_ptr_lut[shadow_lut_index] = shadow_ptr;
 	shadow_size_lut[shadow_lut_index] = n;
 	shadow_lut_index++;
 	printk("shadow_lut_index %d\n", shadow_lut_index);
 #endif 
-	memset((void*)(shadow_ptr + OneMB), n, SH_ALLOCED);
+	memset((void*)(shadow_ptr + OneMB), 0x0, n);
+	printk("shadow_ptr + OneMB contents: %x\n", *((uint32_t*)(shadow_ptr + OneMB)));  
+	memset((void*)(shadow_ptr + OneMB), SH_ALLOCED, n);
+	printk("shadow_ptr + OneMB contents: %x\n", *((uint32_t*)(shadow_ptr + OneMB)));  
 	return (void*) shadow_ptr;
 }
 
-void memcheck_free(void* ptr) {
+void memcheck_free_helper(void* ptr) {
 	kfree(ptr);
-	uint32_t size_to_free = 0;
 	//Dawson: if we don't find it, give an error
 	// may want to bring in ck_alloc
 	// Valgrind paper: used a hash table to keep track of locations
-	for(int i = 0; i < shadow_lut_index; i++) {
-		if((uint32_t)ptr == shadow_ptr_lut[i]) {
-			size_to_free = shadow_size_lut[i];
-			break;
-		}
-	}
-	shadow_free(((uint32_t)ptr + OneMB), size_to_free, SH_FREED);
+	printk("ptr + OneMB = %x\n", ptr + OneMB);
+	printk("shadow_ptr + OneMB contents: %x\n", *((uint32_t*)(ptr + OneMB)));  
+	memset(((void*)(ptr + OneMB)), SH_FREED, 4);
+	printk("shadow_ptr + OneMB contents: %x\n", *((uint32_t*)(ptr + OneMB)));  
+	//shadow_free(((uint32_t)ptr + OneMB), size_to_free, SH_FREED);
 }
 
 // <pc> should point to the system call instruction.
@@ -425,16 +431,16 @@ int syscall_vector(unsigned pc, uint32_t r0) {
 	}else if (sys_num == 3) {
 		// RMW: enable access, set shadow memory, disable access
 		// Dawson: try to get all the code in here
-		dom_perm_set(track_id, DOM_client);
-		printk("asserting that r0 == 4, %x\n", r0);
-		assert(r0 == 4);
+		dom_perm_set(shadow_id, DOM_client);
 		uint32_t val = (uint32_t)memcheck_alloc_helper(r0);
-		dom_perm_set(track_id, DOM_no_access);
+		dom_perm_set(shadow_id, DOM_no_access);
 		return val;
     }else if (sys_num == 4) {
 		//dom_perm_set(shadow_id, DOM_client);
-		//memset((void*)r0, r1, r2);
 		//dom_perm_set(shadow_id, DOM_no_access);
+		dom_perm_set(shadow_id, DOM_client);
+		memcheck_free_helper((void*)r0);
+		dom_perm_set(shadow_id, DOM_no_access);
 	}
 	else if (sys_num == 10) {
 		return 10;
